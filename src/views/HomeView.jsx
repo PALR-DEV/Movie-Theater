@@ -1,10 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 const HomeView = () => {
     const [currentSlide, setCurrentSlide] = useState(0);
-    const [isPlaying, setIsPlaying] = useState(true);
     const [activeTab, setActiveTab] = useState('now-showing');
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const touchStartX = useRef(null);
+    const touchEndX = useRef(null);
+    const startX = useRef(null);
+    const currentX = useRef(null);
+    // New refs for vertical movement
+    const startY = useRef(null);
+    const currentY = useRef(null);
+    const [isDragging, setIsDragging] = useState(false);
 
     const nowShowing = [
         {
@@ -33,15 +40,62 @@ const HomeView = () => {
         }
     ];
 
-    useEffect(() => {
-        let interval;
-        if (isPlaying) {
-            interval = setInterval(() => {
-                setCurrentSlide((prev) => (prev + 1) % nowShowing.length);
-            }, 6000);
+    const handleStart = (e) => {
+        const touch = e.touches[0];
+        startX.current = touch.clientX;
+        currentX.current = touch.clientX;
+        startY.current = touch.clientY;
+        currentY.current = touch.clientY;
+        setIsDragging(true);
+    };
+
+    const handleMove = (e) => {
+        if (!startX.current) return;
+        const touch = e.touches[0];
+        currentX.current = touch.clientX;
+        currentY.current = touch.clientY;
+        // No default prevention so that vertical scroll is allowed
+    };
+
+    const handleEnd = () => {
+        if (!startX.current || !currentX.current) return;
+        // Check if vertical movement is significant (e.g. more than 30px)
+        const verticalDiff = Math.abs(currentY.current - startY.current);
+        if (verticalDiff > 30) {
+            // Do nothing if user scrolls vertically
+            startX.current = null;
+            currentX.current = null;
+            startY.current = null;
+            currentY.current = null;
+            setIsDragging(false);
+            return;
         }
+
+        const swipeDistance = currentX.current - startX.current;
+        const minSwipeDistance = 50;
+
+        if (Math.abs(swipeDistance) > minSwipeDistance) {
+            if (swipeDistance > 0) {
+                // Swipe right
+                setCurrentSlide((prev) => (prev === 0 ? nowShowing.length - 1 : prev - 1));
+            } else {
+                // Swipe left
+                setCurrentSlide((prev) => (prev + 1) % nowShowing.length);
+            }
+        }
+        startX.current = null;
+        currentX.current = null;
+        startY.current = null;
+        currentY.current = null;
+        setIsDragging(false);
+    };
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentSlide((prev) => (prev + 1) % nowShowing.length);
+        }, 6000);
         return () => clearInterval(interval);
-    }, [isPlaying]);
+    }, []);
 
     return (
         <div className="bg-black min-h-screen">
@@ -116,7 +170,14 @@ const HomeView = () => {
             {/* Enhanced Movie Slider for Mobile */}
             <div className="relative h-[100dvh]">
                 {/* Movie Slides */}
-                <div className="relative h-full overflow-hidden">
+                <div 
+                    className={`relative h-full overflow-hidden ${
+                        isDragging ? 'cursor-grabbing' : 'cursor-grab'
+                    }`}
+                    onTouchStart={handleStart}
+                    onTouchMove={handleMove}
+                    onTouchEnd={handleEnd}
+                >
                     {nowShowing.map((movie, index) => (
                         <div
                             key={index}
@@ -153,32 +214,13 @@ const HomeView = () => {
                     ))}
                 </div>
 
-                {/* Slider Controls */}
+                {/* Modified Slider Controls - removed play/pause */}
                 <div className="absolute bottom-32 right-8 md:right-16 z-30 flex flex-col items-end space-y-4">
-                    <div className="flex space-x-2">
-                        <button
-                            onClick={() => setIsPlaying(!isPlaying)}
-                            className="text-white hover:text-red-500 transition-colors"
-                        >
-                            {isPlaying ? (
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 9v6m4-6v6"/>
-                                </svg>
-                            ) : (
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
-                                </svg>
-                            )}
-                        </button>
-                    </div>
                     <div className="flex space-x-2">
                         {nowShowing.map((_, index) => (
                             <button
                                 key={index}
-                                onClick={() => {
-                                    setCurrentSlide(index);
-                                    setIsPlaying(false);
-                                }}
+                                onClick={() => setCurrentSlide(index)}
                                 className={`w-16 h-1 rounded-full transition-all duration-300 ${
                                     currentSlide === index ? 'bg-white' : 'bg-gray-600'
                                 }`}

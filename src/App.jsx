@@ -3,7 +3,7 @@ import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
 import HomeView from './views/HomeView'
-import MoviesView from './views/MoviesView'
+import MovieDetails from './views/MovieDetailView'
 import './App.css'
 
 function App() {
@@ -17,7 +17,7 @@ function App() {
 
         <Routes>
           <Route path="/" element={<HomeView />} />
-          <Route path="/movies" element={<MoviesView />} />
+          <Route path="/movie/:id" element={< MovieDetails/>} />
         </Routes>
       </div>
     </Router>
