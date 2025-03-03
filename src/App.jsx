@@ -4,7 +4,9 @@ import viteLogo from '/vite.svg'
 import { HashRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import HomeView from './views/HomeView'
 import MovieDetails from './views/MovieDetailView'
+import BookingView from './views/BookingView';
 import './App.css'
+import CheckOutView from './views/CheckOutView';
 
 function App() {
   return (
@@ -18,6 +20,8 @@ function App() {
         <Routes>
           <Route path="/" element={<HomeView />} />
           <Route path="/movie/:id" element={< MovieDetails/>} />
+          <Route path='/booking' element={<BookingView />} />
+          <Route path='/checkout' element={<CheckOutView />} />
         </Routes>
       </div>
     </Router>

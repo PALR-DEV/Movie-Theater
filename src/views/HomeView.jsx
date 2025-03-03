@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const HomeView = () => {
     const navigate = useNavigate();
@@ -147,6 +147,8 @@ const HomeView = () => {
                             </div>
                         </nav>
                     </div>
+
+
 
                     {/* Enhanced Mobile Menu */}
                     <div className={`md:hidden fixed inset-0 bg-black/98 backdrop-blur-sm transition-all duration-300 ease-in-out ${
