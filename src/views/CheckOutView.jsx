@@ -22,7 +22,7 @@ const PaymentForm = () => {
             fontFamily: 'inherit',
             fontSize: '16px',
             '::placeholder': {
-                color: '#64748b'
+                color: '#64748b'  
             },
             backgroundColor: 'transparent',
             iconColor: 'white'
