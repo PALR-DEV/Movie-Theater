@@ -82,6 +82,7 @@ const CheckOutView = () => {
         <div className="min-h-screen bg-black text-white">
             {/* Back button */}
             <button
+            
                 onClick={() => navigate(-1)}
                 className="fixed top-6 left-4 sm:left-8 z-50 text-white hover:text-zinc-300 transition-all duration-300 
           flex items-center gap-2 group bg-black/40 hover:bg-black/60 backdrop-blur-lg 
