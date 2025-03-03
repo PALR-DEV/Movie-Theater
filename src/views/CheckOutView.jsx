@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { loadStripe } from '@stripe/stripe-js';
-import { Elements, CardNumberElement, CardExpiryElement, CardCvcElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { Elements, CardNumberElement, CardExpiryElement, CardCvcElement, useStripe, useElements, PaymentRequestButtonElement } from '@stripe/react-stripe-js';
 
 const stripePromise = loadStripe('pk_test_51QyWMfQIfffWksP334nTV1WPtzBjisMJX5RBzJow4rfNcg3iLwkKNCojMgxa72r0E5n7YSAplRCxhnkFOJW84iSC00ajWnaKpP');
 
@@ -11,10 +11,47 @@ const PaymentForm = () => {
     const navigate = useNavigate();
     const [error, setError] = useState(null);
     const [processing, setProcessing] = useState(false);
+    const [paymentRequest, setPaymentRequest] = useState(null);
     const [formData, setFormData] = useState({
-        // email: '',
-        cardName: ''
+        cardName: '',
+        email: ''
     });
+
+    useEffect(() => {
+        if (!stripe) return;
+
+        const pr = stripe.paymentRequest({
+            country: 'US',
+            currency: 'usd',
+            total: {
+                label: 'Movie Tickets',
+                amount: 3497,
+            },
+            requestPayerName: true,
+            requestPayerEmail: true,
+        });
+
+        pr.canMakePayment().then(result => {
+            if (result) {
+                setPaymentRequest(pr);
+            }
+        });
+
+        pr.on('paymentmethod', async (e) => {
+            setProcessing(true);
+            try {
+                console.log('PaymentMethod:', e.paymentMethod);
+                setError(null);
+                setProcessing(false);
+                setStep('confirmation');
+                e.complete('success');
+            } catch (err) {
+                setError('An error occurred while processing your payment');
+                setProcessing(false);
+                e.complete('fail');
+            }
+        });
+    }, [stripe]);
 
     const elementStyles = {
         base: {
@@ -75,6 +112,30 @@ const PaymentForm = () => {
 
     return (
         <form onSubmit={handleSubmit} className="lg:col-span-3 lg:order-1 space-y-6">
+            {paymentRequest && (
+                <div className="mb-6">
+                    <PaymentRequestButtonElement
+                        options={{
+                            paymentRequest,
+                            style: {
+                                paymentRequestButton: {
+                                    type: 'default',
+                                    theme: 'dark',
+                                    height: '48px',
+                                },
+                            },
+                        }}
+                    />
+                    <div className="relative my-8">
+                        <div className="absolute inset-0 flex items-center">
+                            <div className="w-full border-t border-white/10"></div>
+                        </div>
+                        <div className="relative flex justify-center text-sm">
+                            <span className="px-4 text-zinc-400 bg-black">Or pay with card</span>
+                        </div>
+                    </div>
+                </div>
+            )}
             <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 space-y-6">
                 <div>
                     <label htmlFor="cardName" className="block text-sm font-medium mb-2">Cardholder Name</label>
