@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import movieService from '../Services/MovieServices';
 
 const HomeView = () => {
     const navigate = useNavigate();
@@ -14,6 +15,25 @@ const HomeView = () => {
     const startY = useRef(null);
     const currentY = useRef(null);
     const [isDragging, setIsDragging] = useState(false);
+    const [movies, setMovies] = useState([])
+
+
+    useEffect(() => {
+        const getMovies = async() => {
+            await movieService.getMovies().then((data) => {
+                const formatMovies = data.map((movie) => ({
+                    ...movie,
+                    categories:JSON.parse(movie.categories)
+                }));
+                console.log(formatMovies)
+                setMovies(formatMovies);
+            }).catch((error) => {
+                console.log(error);
+            })
+        }
+
+        getMovies();
+    }, [])
 
     const nowShowing = [
         {
@@ -179,63 +199,70 @@ const HomeView = () => {
             {/* Enhanced Movie Slider for Mobile */}
             <div className="relative h-[100dvh] overflow-hidden">
                 {/* Movie Slides */}
-                <div 
-                    className={`relative h-full overflow-hidden ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
-                    onTouchStart={handleStart}
-                    onTouchMove={handleMove}
-                    onTouchEnd={handleEnd}
-                >
-                    {nowShowing.map((movie, index) => (
-                        <div
-                            key={index}
-                            className={`absolute inset-0 transition-opacity duration-1000 ${currentSlide === index ? 'opacity-100' : 'opacity-0'}`}
-                        >
-                            {/* Movie Background */}
-                            <div className="absolute inset-0">
-                                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent z-10"></div>
-                                <img
-                                    src={movie.image}
-                                    alt={movie.title}
-                                    className="w-full h-full object-cover"
-                                />
-                            </div>
+                {movies.length > 0 && (
+                    <div 
+                        className={`relative h-full overflow-hidden ${movies.length > 1 ? (isDragging ? 'cursor-grabbing' : 'cursor-grab') : ''}`}
+                        onTouchStart={movies.length > 1 ? handleStart : undefined}
+                        onTouchMove={movies.length > 1 ? handleMove : undefined}
+                        onTouchEnd={movies.length > 1 ? handleEnd : undefined}
+                    >
+                        {movies.slice(0, 3).map((movie, index) => (
+                            <div
+                                key={index}
+                                className={`absolute inset-0 transition-opacity duration-1000 ${movies.length === 1 ? 'opacity-100' : (currentSlide === index ? 'opacity-100' : 'opacity-0')}`}
+                            >
+                                {/* Movie Background */}
+                                <div className="absolute inset-0">
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent z-10"></div>
+                                    <img
+                                        src={movie.poster_url}
+                                        alt={movie.title}
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
 
-                            {/* Enhanced Mobile Movie Info */}
-                            <div className="absolute bottom-0 left-0 right-0 z-20 p-4 sm:p-8 md:p-16">
-                                <div className="container mx-auto">
-                                    <h1 className="text-3xl sm:text-4xl md:text-7xl font-bold text-white mb-2 md:mb-4">{movie.title}</h1>
-                                    <p className="text-lg sm:text-xl md:text-2xl text-gray-300 mb-4 md:mb-6 line-clamp-2">{movie.tagline}</p>
-                                    <div className="flex flex-wrap items-center gap-3 text-sm text-gray-300 mb-6">
-                                        <span>{movie.duration}</span>
-                                        <span className="px-2 py-1 bg-white text-black rounded text-xs font-medium">{movie.rating}</span>
-                                        <span className="line-clamp-1">{movie.genre}</span>
+                                {/* Enhanced Mobile Movie Info */}
+                                <div className="absolute bottom-0 left-0 right-0 z-20 p-4 sm:p-8 md:p-16">
+                                    <div className="container mx-auto">
+                                        <h1 className="text-3xl sm:text-4xl md:text-7xl font-bold text-white mb-2 md:mb-4">{movie.title}</h1>
+                                        <p className="text-lg sm:text-xl md:text-2xl text-gray-300 mb-4 md:mb-6 line-clamp-2">{movie.tagline}</p>
+                                        <div className="flex flex-wrap items-center gap-3 text-sm text-gray-300 mb-6">
+                                            <span>{movie.duration}</span>
+                                            {movie.categories.map((category, idx) => (
+                                                <span key={idx} className="text-xs px-1.5 py-0.5 bg-white/10 backdrop-blur-sm rounded-sm text-white/90">
+                                                    {category}
+                                                </span>
+                                            ))}
+                                        </div>
+                                        <button 
+                                            onClick={() => navigate(`/movie/${movie.id}`)}
+                                            className="w-full sm:w-auto bg-white text-black px-8 py-4 rounded-lg hover:bg-gray-200 transition-colors text-lg font-medium"
+                                        >
+                                            Get Tickets
+                                        </button>
                                     </div>
-                                    <button 
-                                        onClick={() => navigate(`/movie/${index + 1}`)}
-                                        className="w-full sm:w-auto bg-white text-black px-8 py-4 rounded-lg hover:bg-gray-200 transition-colors text-lg font-medium"
-                                    >
-                                        Get Tickets
-                                    </button>
                                 </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
-
-                {/* Modified Slider Controls - removed play/pause */}
-                <div className="absolute bottom-32 right-8 md:right-16 z-30 flex flex-col items-end space-y-4">
-                    <div className="flex space-x-2">
-                        {nowShowing.map((_, index) => (
-                            <button
-                                key={index}
-                                onClick={() => setCurrentSlide(index)}
-                                className={`w-16 h-1 rounded-full transition-all duration-300 ${
-                                    currentSlide === index ? 'bg-white' : 'bg-gray-600'
-                                }`}
-                            />
                         ))}
                     </div>
-                </div>
+                )}
+
+                {/* Modified Slider Controls - only show for multiple movies */}
+                {movies.length > 1 && movies.length <= 3 && (
+                    <div className="absolute bottom-32 right-8 md:right-16 z-30 flex flex-col items-end space-y-4">
+                        <div className="flex space-x-2">
+                            {movies.slice(0, 3).map((_, index) => (
+                                <button
+                                    key={index}
+                                    onClick={() => setCurrentSlide(index)}
+                                    className={`w-16 h-1 rounded-full transition-all duration-300 ${
+                                        currentSlide === index ? 'bg-white' : 'bg-gray-600'
+                                    }`}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Enhanced Movie Grid for Mobile */}
@@ -248,28 +275,37 @@ const HomeView = () => {
                     </div>
 
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2 sm:gap-4">
-                        {nowShowing.map((movie, index) => (
+                        {movies.map((movie, index) => (
                             <div 
                                 key={index} 
-                                onClick={() => navigate(`/movie/${index + 1}`)}
+                                onClick={() => navigate(`/movie/${movie.id}`)}
                                 className="bg-zinc-900 rounded-lg overflow-hidden group active:scale-95 transition-all duration-300 touch-manipulation hover:ring-2 hover:ring-white cursor-pointer"
                             >
                                 <div className="relative aspect-[2/3]">
                                     <img
-                                        src={movie.image}
+                                        src={movie.poster_url}
                                         alt={movie.title}
                                         className="w-full h-full object-cover"
                                         loading="lazy"
                                     />
                                     <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-100">
-                                        <div className="absolute top-2 right-2">
-                                            <span className="bg-white text-black px-2 py-0.5 rounded text-xs font-medium">
-                                                {movie.rating}
+                                        <div className="absolute top-2 right-2 flex gap-2 items-center">
+                                            <span className="bg-white/10 backdrop-blur-sm text-white px-2 py-0.5 rounded text-xs font-medium">
+                                                {movie.duration}
                                             </span>
+                                            {/* <span className="bg-white/90 text-black px-2 py-0.5 rounded text-xs font-medium">
+                                                {movie.rating}
+                                            </span> */}
                                         </div>
                                         <div className="absolute bottom-0 left-0 right-0 p-3">
                                             <h3 className="text-white font-bold line-clamp-1 mb-1">{movie.title}</h3>
-                                            <p className="text-gray-300 text-xs line-clamp-1">{movie.genre}</p>
+                                            <div className="flex flex-wrap gap-1 mb-1">
+                                                {movie.categories.map((category, idx) => (
+                                                    <span key={idx} className="text-xs px-1.5 py-0.5 bg-white/10 backdrop-blur-sm rounded-sm text-white/90">
+                                                        {category}
+                                                    </span>
+                                                ))}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
