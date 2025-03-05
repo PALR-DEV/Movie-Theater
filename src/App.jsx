@@ -8,6 +8,7 @@ import BookingView from './views/BookingView';
 import PurchaseCompleteView from './views/PurchaseCompleteView';
 import './App.css'
 import CheckOutView from './views/CheckOutView';
+import FoodMenuView from './views/FoodMenuView';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Routes>
           <Route path="/" element={<HomeView />} />
           <Route path="/movie/:id" element={< MovieDetails/>} />
+          <Route path='/menu' element={<FoodMenuView />} />
           <Route path='/booking' element={<BookingView />} />
           <Route path='/checkout' element={<CheckOutView />} />
           <Route path='/purchase-complete' element={<PurchaseCompleteView />} />

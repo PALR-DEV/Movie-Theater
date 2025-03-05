@@ -150,7 +150,10 @@ const HomeView = () => {
                         {/* Desktop Navigation */}
                         <nav className="hidden md:flex items-center space-x-6">
                             <div className="group relative">
-                                <button className="px-4 py-2 text-gray-400 hover:text-white transition-colors flex items-center gap-2">
+                                <button 
+                                    onClick={() => navigate('/')}
+                                    className="px-4 py-2 text-gray-400 hover:text-white transition-colors flex items-center gap-2"
+                                >
                                     Movies
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -158,7 +161,10 @@ const HomeView = () => {
                                 </button>
                             </div>
                             <div className="group relative">
-                                <button className="px-4 py-2 text-gray-400 hover:text-white transition-colors flex items-center gap-2">
+                                <button 
+                                    onClick={() => navigate('/menu')}
+                                    className="px-4 py-2 text-gray-400 hover:text-white transition-colors flex items-center gap-2"
+                                >
                                     Menu
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -180,13 +186,19 @@ const HomeView = () => {
                             <div className="flex flex-col items-center space-y-8 w-full">
                                 <button 
                                     className="w-full px-8 py-4 rounded-lg border border-white/20 bg-white/5 backdrop-blur-sm text-2xl text-white hover:bg-white/10 active:bg-white/20 transition-all duration-300 touch-manipulation"
-                                    onClick={() => setMobileMenuOpen(false)}
+                                    onClick={() => {
+                                        setMobileMenuOpen(false);
+                                        navigate('/');
+                                    }}
                                 >
                                     Movies
                                 </button>
                                 <button 
                                     className="w-full px-8 py-4 rounded-lg border border-white/20 bg-white/5 backdrop-blur-sm text-2xl text-white hover:bg-white/10 active:bg-white/20 transition-all duration-300 touch-manipulation"
-                                    onClick={() => setMobileMenuOpen(false)}
+                                    onClick={() => {
+                                        setMobileMenuOpen(false);
+                                        navigate('/menu');
+                                    }}
                                 >
                                     Menu
                                 </button>
