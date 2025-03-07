@@ -33,9 +33,13 @@ const MovieDetailView = () => {
         const formattedMovie = {
           ...movie,
           categories: JSON.parse(movie.categories),
-          screenings: movie.screenings
+          screenings: movie.screenings.map(screening => ({
+            ...screening,
+            days: Object.keys(screening.timeSlotsByDay),
+            timeSlots: Object.values(screening.timeSlotsByDay)[0] // Using first day's time slots as default
+          }))
         };
-        setScreenings(movie.screenings);
+        setScreenings(formattedMovie.screenings);
         setMovie(formattedMovie);
       } catch (error) {
         console.error("error fetching movies");
@@ -172,11 +176,11 @@ const MovieDetailView = () => {
                     <div key={screeningIndex} className="space-y-6">
                       <div className="space-y-2">
                         <h3 className="text-lg font-medium text-white">{screening.sala}</h3>
-                        {screening.days.map((day, dayIndex) => (
+                        {Object.entries(screening.timeSlotsByDay).map(([day, times], dayIndex) => (
                           <div key={dayIndex} className="space-y-4">
                             <h4 className="text-base font-medium text-zinc-400">{day}</h4>
                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                              {screening.timeSlots.map((time) => (
+                              {times.map((time) => (
                                 <button
                                   key={time}
                                   onClick={() => handleTimeSelect(day, time, screening.sala)}
