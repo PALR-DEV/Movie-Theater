@@ -16,6 +16,28 @@ const MovieDetailView = () => {
   const closeTrailer = () => setShowTrailer(false);
 
   const handleTimeSelect = (day, time, sala) => {
+    // Parse the day and time into a Date object
+    const [dayName, monthName, date] = day.split(', ');
+    const [hour, minutePeriod] = time.split(':');
+    const [minute, period] = minutePeriod.split(' ');
+    const month = new Date(`${monthName} 1`).getMonth();
+    const year = new Date().getFullYear();
+    const adjustedHour = period === 'PM' && hour !== '12' ? parseInt(hour) + 12 : (period === 'AM' && hour === '12' ? 0 : parseInt(hour));
+
+    const showDateTime = new Date(year, month, parseInt(date), adjustedHour, parseInt(minute));
+    const currentDateTime = new Date();
+    const timeDifference = showDateTime - currentDateTime;
+    const minutesDifference = timeDifference / (1000 * 60);
+
+    // Check if showtime has passed or is too close
+    if (timeDifference < 0) {
+      return; // Past showtime
+    }
+
+    if (minutesDifference < 30) {
+      return; // Less than 30 minutes until showtime
+    }
+
     if (selectedTime === time && selectedDay === day) {
       setSelectedTime(null);
       setSelectedDay(null);
@@ -184,7 +206,40 @@ const MovieDetailView = () => {
                                 <button
                                   key={time}
                                   onClick={() => handleTimeSelect(day, time, screening.sala)}
-                                  className={`py-3 px-4 backdrop-blur-xl text-white font-medium rounded-xl transition-all duration-500 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-white/30 active:scale-95 ${selectedTime === time && selectedDay === day ? 'bg-white/30 border-2 border-white scale-[1.05] shadow-lg shadow-white/20' : 'bg-white/10 hover:bg-white/20 border-2 border-transparent'}`}
+                                  disabled={(() => {
+                                    const [dayName, monthName, date] = day.split(', ');
+                                    const [hour, minutePeriod] = time.split(':');
+                                    const [minute, period] = minutePeriod.split(' ');
+                                    const month = new Date(`${monthName} 1`).getMonth();
+                                    const year = new Date().getFullYear();
+                                    const adjustedHour = period === 'PM' && hour !== '12' ? parseInt(hour) + 12 : (period === 'AM' && hour === '12' ? 0 : parseInt(hour));
+                                    
+                                    const showDateTime = new Date(year, month, parseInt(date), adjustedHour, parseInt(minute));
+                                    const currentDateTime = new Date();
+                                    const timeDifference = showDateTime - currentDateTime;
+                                    const minutesDifference = timeDifference / (1000 * 60);
+                                    
+                                    return timeDifference < 0 || minutesDifference < 30;
+                                  })()}
+                                  className={`py-3 px-4 backdrop-blur-xl text-white font-medium rounded-xl transition-all duration-500 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-white/30 active:scale-95 
+                                    ${(() => {
+                                      const [dayName, monthName, date] = day.split(', ');
+                                      const [hour, minutePeriod] = time.split(':');
+                                      const [minute, period] = minutePeriod.split(' ');
+                                      const month = new Date(`${monthName} 1`).getMonth();
+                                      const year = new Date().getFullYear();
+                                      const adjustedHour = period === 'PM' && hour !== '12' ? parseInt(hour) + 12 : (period === 'AM' && hour === '12' ? 0 : parseInt(hour));
+                                      
+                                      const showDateTime = new Date(year, month, parseInt(date), adjustedHour, parseInt(minute));
+                                      const currentDateTime = new Date();
+                                      const timeDifference = showDateTime - currentDateTime;
+                                      const minutesDifference = timeDifference / (1000 * 60);
+                                      
+                                      if (timeDifference < 0 || minutesDifference < 30) {
+                                        return 'opacity-50 cursor-not-allowed bg-zinc-800';
+                                      }
+                                      return selectedTime === time && selectedDay === day ? 'bg-white/30 border-2 border-white scale-[1.05] shadow-lg shadow-white/20' : 'bg-white/10 hover:bg-white/20 border-2 border-transparent';
+                                    })()}`}
                                 >
                                   {time}
                                 </button>

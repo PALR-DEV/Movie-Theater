@@ -1,13 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom'
+import movieService from '../Services/MovieServices';
 
 const BookingView = () => {
     const location = useLocation();
     const navigate = useNavigate();
     // Hardcoded values for development
-    const day = "Thursday, March 28";
-    const time = "7:00 PM";
-    const movieId = "12345";
+    // const day = "Thursday, March 28";
+    // const time = "7:00 PM";
+    // const movieId = "12345";
+    const { day, time, sala, movieId } = location.state;
+    const [movie, setMovie] = useState();
+
+    useEffect(() => {
+        const fetchMovie = async() => {
+            const getMovie = await movieService.getMoviebyID(movieId);
+            // console.log(getMovie)
+            setMovie(getMovie);
+        }
+        fetchMovie();
+    }, [])
 
     const [tickets, setTickets] = useState({
         adult: 0,
@@ -58,7 +70,8 @@ const BookingView = () => {
                 tickets,
                 total,
                 movieDetails: {
-                    title: 'Dune Part Two',
+                    title: movie?.title,
+                    sala: movie?.screenings[0].sala,
                     day,
                     time
                 }
@@ -90,8 +103,8 @@ const BookingView = () => {
             <div className="relative w-full h-[50vh] md:h-[70vh] overflow-hidden">
                 <img
                     className="w-full h-full object-cover object-center transform transition-transform duration-700 hover:scale-105"
-                    src="https://m.media-amazon.com/images/M/MV5BNTc0YmQxMjEtODI5MC00NjFiLTlkMWUtOGQ5NjFmYWUyZGJhXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg"
-                    alt="Dune Part Two"
+                    src={movie?.poster_url}
+                    alt={movie?.title}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent md:bg-gradient-to-t md:from-black md:via-black/50 md:to-transparent" />
                 <div className="absolute inset-0 flex flex-col justify-center items-center text-center px-8">

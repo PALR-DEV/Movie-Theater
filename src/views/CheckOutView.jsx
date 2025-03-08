@@ -9,13 +9,17 @@ const PaymentForm = () => {
     const stripe = useStripe();
     const elements = useElements();
     const navigate = useNavigate();
+    const location = useLocation();
     const [error, setError] = useState(null);
     const [processing, setProcessing] = useState(false);
+    const { tickets, total, movieDetails } = location.state;
     const [paymentRequest, setPaymentRequest] = useState(null);
     const [formData, setFormData] = useState({
         cardName: '',
         email: ''
     });
+
+
 
     useEffect(() => {
         if (!stripe) return;
@@ -25,7 +29,7 @@ const PaymentForm = () => {
             currency: 'usd',
             total: {
                 label: 'Movie Tickets',
-                amount: 3497,
+                amount: 100
             },
             requestPayerName: true,
             requestPayerEmail: true,
@@ -59,7 +63,7 @@ const PaymentForm = () => {
             fontFamily: 'inherit',
             fontSize: '16px',
             '::placeholder': {
-                color: '#64748b'  
+                color: '#64748b'
             },
             backgroundColor: 'transparent',
             iconColor: 'white'
@@ -210,7 +214,7 @@ const PaymentForm = () => {
                 disabled={!stripe || processing}
                 className={`w-full px-8 py-4 bg-white text-black rounded-xl font-semibold transition-all duration-300 transform hover:scale-[1.02] ${processing || !stripe ? 'opacity-50 cursor-not-allowed' : 'hover:bg-zinc-200'}`}
             >
-                {processing ? 'Processing...' : 'Pay $34.97'}
+                {processing ? 'Processing...' : `Pay $${(total * 1.115).toFixed(2)}`}
             </button>
 
             <p className="text-center text-sm text-zinc-400 mt-4">
@@ -234,6 +238,8 @@ const CheckOutView = () => {
         cvv: '',
         // email: '',
     });
+
+    const { tickets = { adult: 0, senior: 0, kid: 0 }, total = 0, movieDetails = {} } = location.state || {};
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -304,9 +310,9 @@ const CheckOutView = () => {
         <div className="min-h-screen bg-black text-white">
             {/* Back button */}
             <button
-            
+
                 onClick={() => navigate(-1)}
-                className="fixed top-6 left-4 sm:left-8 z-50 text-white hover:text-zinc-300 transition-all duration-300 
+                className="fixed top-2 left-4 sm:left-8 z-50 text-white hover:text-zinc-300 transition-all duration-300 
           flex items-center gap-2 group bg-black/40 hover:bg-black/60 backdrop-blur-lg 
           rounded-full p-3.5 border border-white/10 hover:border-white/20 shadow-lg"
                 style={{ position: 'fixed' }}
@@ -330,33 +336,76 @@ const CheckOutView = () => {
 
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
                     {/* Order Summary - Moved above payment form */}
-                    <div className="lg:col-span-2 lg:order-2">
-                        <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 sticky top-6">
-                            <h2 className="text-xl font-semibold mb-6">Order Summary</h2>
-
-                            <div className="space-y-4 mb-6">
-                                <div className="flex justify-between">
-                                    <span className="text-zinc-400">2 Adult Tickets</span>
-                                    <span>$25.98</span>
+                    <div className="lg:col-span-2 lg:order-2 space-y-8">
+                        {/* Order Summary */}
+                        <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/10 hover:border-white/20 transition-all duration-300 overflow-hidden">
+                            <div className="p-6 space-y-6">
+                                <h3 className="text-2xl font-semibold">Order Summary</h3>
+                                
+                                {/* Movie Details */}
+                                <div className="space-y-4 pb-6 border-b border-white/10">
+                                    <h4 className="text-lg font-medium text-zinc-300">{movieDetails.title}</h4>
+                                    <div className="flex flex-wrap gap-2">
+                                        <span className="px-3 py-1 bg-white/5 rounded-full text-sm text-zinc-400">{movieDetails.day}</span>
+                                        <span className="px-3 py-1 bg-white/5 rounded-full text-sm text-zinc-400">{movieDetails.time}</span>
+                                        <span className="px-3 py-1 bg-white/5 rounded-full text-sm text-zinc-400">{movieDetails.sala}</span>
+                                    </div>
                                 </div>
-                                <div className="flex justify-between">
-                                    <span className="text-zinc-400">1 Senior Ticket</span>
-                                    <span>$8.99</span>
+                        
+                                {/* Tickets Breakdown */}
+                                <div className="space-y-4 pb-6 border-b border-white/10">
+                                    {tickets.adult > 0 && (
+                                        <div className="flex justify-between items-center">
+                                            <div className="space-y-1">
+                                                <p className="font-medium">Adult Tickets</p>
+                                                <p className="text-sm text-zinc-400">{tickets.adult} × $12.99</p>
+                                            </div>
+                                            <p className="font-medium">${(tickets.adult * 12.99).toFixed(2)}</p>
+                                        </div>
+                                    )}
+                                    {tickets.senior > 0 && (
+                                        <div className="flex justify-between items-center">
+                                            <div className="space-y-1">
+                                                <p className="font-medium">Senior Tickets</p>
+                                                <p className="text-sm text-zinc-400">{tickets.senior} × $8.99</p>
+                                            </div>
+                                            <p className="font-medium">${(tickets.senior * 8.99).toFixed(2)}</p>
+                                        </div>
+                                    )}
+                                    {tickets.kid > 0 && (
+                                        <div className="flex justify-between items-center">
+                                            <div className="space-y-1">
+                                                <p className="font-medium">Kid Tickets</p>
+                                                <p className="text-sm text-zinc-400">{tickets.kid} × $6.99</p>
+                                            </div>
+                                            <p className="font-medium">${(tickets.kid * 6.99).toFixed(2)}</p>
+                                        </div>
+                                    )}
                                 </div>
-                                <div className="border-t border-white/10 pt-4">
-                                    <div className="flex justify-between font-semibold">
-                                        <span>Total</span>
-                                        <span>$34.97</span>
+                        
+                                {/* Total */}
+                                <div className="space-y-4">
+                                    <div className="flex justify-between items-center text-zinc-400">
+                                        <p>Subtotal</p>
+                                        <p>${total.toFixed(2)}</p>
+                                    </div>
+                                    <div className="flex justify-between items-center text-zinc-400">
+                                        <p>IVU (11.5%)</p>
+                                        <p>${(total * 0.115).toFixed(2)}</p>
+                                    </div>
+                                    <div className="flex justify-between items-center text-zinc-400">
+                                        <p>Service Fee</p>
+                                        <p>$1.00</p>
+                                    </div>
+                                    <div className="flex justify-between items-center pt-4 border-t border-white/10">
+                                        <p className="text-lg font-semibold">Total</p>
+                                        <p className="text-2xl font-bold">${(total * 1.115 + 1).toFixed(2)}</p>
                                     </div>
                                 </div>
                             </div>
-
-                            <div className="bg-white/5 rounded-xl p-4">
-                                <h3 className="font-semibold mb-2">Dune Part Two</h3>
-                                <p className="text-zinc-400">Thursday, March 28</p>
-                                <p className="text-zinc-400">7:00 PM</p>
-                            </div>
                         </div>
+                    
+                        {/* Removing the Add Food & Drinks Button */}
                     </div>
 
                     {/* Payment Form */}
