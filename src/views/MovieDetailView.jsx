@@ -11,16 +11,7 @@ const MovieDetailView = () => {
   const [movie, setMovie] = useState({});
   const [screenings, setScreenings] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [currentDateTime, setCurrentDateTime] = useState(new Date());
 
-  // Update current time every minute
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentDateTime(new Date());
-    }, 60000); // Update every minute
-
-    return () => clearInterval(timer);
-  }, []);
 
   const openTrailer = () => setShowTrailer(true);
   const closeTrailer = () => setShowTrailer(false);
@@ -268,10 +259,6 @@ const MovieDetailView = () => {
                 ))}
               </div>
 
-              {/* Current Time (Debug) */}
-              <div className="text-white text-sm">
-                <p>Current time: {currentDateTime.toLocaleString()}</p>
-              </div>
 
               {/* Showtimes Section */}
               <div className="space-y-6">
