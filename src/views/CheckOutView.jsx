@@ -18,12 +18,38 @@ const PaymentForm = () => {
         cardName: '',
         email: ''
     });
+
+    console.log(movieDetails)
     
 
     useEffect(() => {
         const fetchClientSecret = async () => {
-            
+            try {
+                const response = await fetch('http://localhost:8000/api/payment/create-intent', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        amount: total ,
+                        currency: 'usd',
+                        metadata: formData.email,
+                        movieDetails:movieDetails
+                    })
+                })
+                if (!response.ok) {
+                    throw new Error('Failed to fetch client secret');
+                }
+                const data = await response.json();
+                console.log(data);
+                
+            } catch (error) {
+                throw error;
+                
+            }
         }
+
+        fetchClientSecret();
     }, [])
 
 

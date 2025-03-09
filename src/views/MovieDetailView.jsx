@@ -11,7 +11,16 @@ const MovieDetailView = () => {
   const [movie, setMovie] = useState({});
   const [screenings, setScreenings] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentDateTime, setCurrentDateTime] = useState(new Date());
 
+  // Update current time every minute
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentDateTime(new Date());
+    }, 60000); // Update every minute
+
+    return () => clearInterval(timer);
+  }, []);
 
   const openTrailer = () => setShowTrailer(true);
   const closeTrailer = () => setShowTrailer(false);
@@ -258,6 +267,7 @@ const MovieDetailView = () => {
                   <span key={index} className="px-5 py-2 bg-white/10 backdrop-blur-xl text-white text-sm font-medium rounded-full hover:bg-white/15 transition-colors duration-300">{category}</span>
                 ))}
               </div>
+
 
 
               {/* Showtimes Section */}
