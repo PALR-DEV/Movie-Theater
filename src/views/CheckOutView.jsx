@@ -18,7 +18,13 @@ const PaymentForm = () => {
         cardName: '',
         email: ''
     });
+    
 
+    useEffect(() => {
+        const fetchClientSecret = async () => {
+            
+        }
+    }, [])
 
 
     useEffect(() => {
@@ -90,24 +96,33 @@ const PaymentForm = () => {
         const cardElement = elements.getElement(CardNumberElement);
 
         try {
-            const { error, paymentMethod } = await stripe.createPaymentMethod({
+            const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
                 type: 'card',
                 card: cardElement,
                 billing_details: {
                     name: formData.cardName,
-                    // email: formData.email
+                    email: formData.email
                 }
             });
 
             if (error) {
                 setError(error.message);
                 setProcessing(false);
-            } else {
-                console.log('PaymentMethod:', paymentMethod);
+
+            }else if (paymentIntent.status === 'succeeded') {
+                //here create the ticket in the database with the id of the ticket 
                 setError(null);
                 setProcessing(false);
-                setStep('confirmation');
+                navigate('/checkout/confirmation', { 
+                    state: { 
+                        tickets, 
+                        total, 
+                        movieDetails,
+                        paymentId: paymentIntent.id 
+                    } 
+                });
             }
+
         } catch (err) {
             setError('An error occurred while processing your payment');
             setProcessing(false);

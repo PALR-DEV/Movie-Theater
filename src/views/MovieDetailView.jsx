@@ -11,30 +11,57 @@ const MovieDetailView = () => {
   const [movie, setMovie] = useState({});
   const [screenings, setScreenings] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentDateTime, setCurrentDateTime] = useState(new Date());
+
+  // Update current time every minute
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentDateTime(new Date());
+    }, 60000); // Update every minute
+
+    return () => clearInterval(timer);
+  }, []);
 
   const openTrailer = () => setShowTrailer(true);
   const closeTrailer = () => setShowTrailer(false);
 
-  const handleTimeSelect = (day, time, sala) => {
-    // Parse the day and time into a Date object
-    const [dayName, monthName, date] = day.split(', ');
+  const parseShowDateTime = (day, time) => {
+    // Split the day into parts
+    const [dayName, monthAndDate] = day.split(', ');
+    const [monthName, date] = monthAndDate.split(' ');
+
+    // Parse the time components
     const [hour, minutePeriod] = time.split(':');
     const [minute, period] = minutePeriod.split(' ');
+    
     const month = new Date(`${monthName} 1`).getMonth();
-    const year = new Date().getFullYear();
+    const year = new Date().getFullYear(); // Current year
     const adjustedHour = period === 'PM' && hour !== '12' ? parseInt(hour) + 12 : (period === 'AM' && hour === '12' ? 0 : parseInt(hour));
 
+    // Create the showDateTime in local timezone
     const showDateTime = new Date(year, month, parseInt(date), adjustedHour, parseInt(minute));
-    const currentDateTime = new Date();
+    
+    // Adjust year if the parsed date is in the past and belongs to an earlier month
+    if (showDateTime < currentDateTime && showDateTime.getMonth() < currentDateTime.getMonth()) {
+        showDateTime.setFullYear(year + 1);
+    }
+    
+    return showDateTime;
+};
+
+  const handleTimeSelect = (day, time, sala) => {
+    const showDateTime = parseShowDateTime(day, time);
     const timeDifference = showDateTime - currentDateTime;
     const minutesDifference = timeDifference / (1000 * 60);
 
     // Check if showtime has passed or is too close
     if (timeDifference < 0) {
+      console.log("This showing has already started");
       return; // Past showtime
     }
 
     if (minutesDifference < 30) {
+      console.log("Less than 30 minutes until showtime");
       return; // Less than 30 minutes until showtime
     }
 
@@ -48,6 +75,14 @@ const MovieDetailView = () => {
     }
   };
 
+  const isTimeDisabled = (day, time) => {
+    const showDateTime = parseShowDateTime(day, time);
+    const timeDifference = showDateTime - currentDateTime;
+    const minutesDifference = timeDifference / (1000 * 60);
+
+    return timeDifference < 0 || minutesDifference < 30;
+};
+
   useEffect(() => {
     const fetchMovies = async () => {
       try {
@@ -55,11 +90,54 @@ const MovieDetailView = () => {
         const formattedMovie = {
           ...movie,
           categories: JSON.parse(movie.categories),
-          screenings: movie.screenings.map(screening => ({
-            ...screening,
-            days: Object.keys(screening.timeSlotsByDay),
-            timeSlots: Object.values(screening.timeSlotsByDay)[0] // Using first day's time slots as default
-          }))
+          screenings: movie.screenings.map(screening => {
+            // Create an array to hold date objects and their formatted strings
+            const dateObjects = screening.time_slots.map(slot => {
+              const date = new Date(slot.date);
+              const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+              const monthName = date.toLocaleDateString('en-US', { month: 'short' });
+              const dayDate = date.getDate();
+              const formattedDate = `${dayName}, ${monthName} ${dayDate}`;
+              return {
+                dateObj: date,
+                formattedDate,
+                times: slot.times.sort((a, b) => {
+                  // Sort times (e.g., "7:30 PM")
+                  const [hourA, minutePeriodA] = a.split(':');
+                  const [minuteA, periodA] = minutePeriodA.split(' ');
+                  const [hourB, minutePeriodB] = b.split(':');
+                  const [minuteB, periodB] = minutePeriodB.split(' ');
+                  
+                  // Convert to 24-hour format for comparison
+                  const hourANum = parseInt(hourA);
+                  const hourBNum = parseInt(hourB);
+                  const hour24A = periodA === 'PM' && hourANum !== 12 ? hourANum + 12 : (periodA === 'AM' && hourANum === 12 ? 0 : hourANum);
+                  const hour24B = periodB === 'PM' && hourBNum !== 12 ? hourBNum + 12 : (periodB === 'AM' && hourBNum === 12 ? 0 : hourBNum);
+                  
+                  if (hour24A !== hour24B) {
+                    return hour24A - hour24B;
+                  }
+                  return parseInt(minuteA) - parseInt(minuteB);
+                })
+              };
+            });
+            
+            // Sort the date objects chronologically
+            dateObjects.sort((a, b) => a.dateObj - b.dateObj);
+            
+            // Convert back to the timeSlotsByDay format
+            const formattedTimeSlots = dateObjects.reduce((acc, { formattedDate, times }) => {
+              return {
+                ...acc,
+                [formattedDate]: times
+              };
+            }, {});
+            
+            return {
+              sala: screening.sala,
+              timeSlotsByDay: formattedTimeSlots
+            };
+          })
         };
         setScreenings(formattedMovie.screenings);
         setMovie(formattedMovie);
@@ -190,6 +268,11 @@ const MovieDetailView = () => {
                 ))}
               </div>
 
+              {/* Current Time (Debug) */}
+              <div className="text-white text-sm">
+                <p>Current time: {currentDateTime.toLocaleString()}</p>
+              </div>
+
               {/* Showtimes Section */}
               <div className="space-y-6">
                 <h2 className="text-2xl font-semibold text-white">Horarios</h2>
@@ -202,48 +285,28 @@ const MovieDetailView = () => {
                           <div key={dayIndex} className="space-y-4">
                             <h4 className="text-base font-medium text-zinc-400">{day}</h4>
                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                              {times.map((time) => (
-                                <button
-                                  key={time}
-                                  onClick={() => handleTimeSelect(day, time, screening.sala)}
-                                  disabled={(() => {
-                                    const [dayName, monthName, date] = day.split(', ');
-                                    const [hour, minutePeriod] = time.split(':');
-                                    const [minute, period] = minutePeriod.split(' ');
-                                    const month = new Date(`${monthName} 1`).getMonth();
-                                    const year = new Date().getFullYear();
-                                    const adjustedHour = period === 'PM' && hour !== '12' ? parseInt(hour) + 12 : (period === 'AM' && hour === '12' ? 0 : parseInt(hour));
-                                    
-                                    const showDateTime = new Date(year, month, parseInt(date), adjustedHour, parseInt(minute));
-                                    const currentDateTime = new Date();
-                                    const timeDifference = showDateTime - currentDateTime;
-                                    const minutesDifference = timeDifference / (1000 * 60);
-                                    
-                                    return timeDifference < 0 || minutesDifference < 30;
-                                  })()}
-                                  className={`py-3 px-4 backdrop-blur-xl text-white font-medium rounded-xl transition-all duration-500 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-white/30 active:scale-95 
-                                    ${(() => {
-                                      const [dayName, monthName, date] = day.split(', ');
-                                      const [hour, minutePeriod] = time.split(':');
-                                      const [minute, period] = minutePeriod.split(' ');
-                                      const month = new Date(`${monthName} 1`).getMonth();
-                                      const year = new Date().getFullYear();
-                                      const adjustedHour = period === 'PM' && hour !== '12' ? parseInt(hour) + 12 : (period === 'AM' && hour === '12' ? 0 : parseInt(hour));
-                                      
-                                      const showDateTime = new Date(year, month, parseInt(date), adjustedHour, parseInt(minute));
-                                      const currentDateTime = new Date();
-                                      const timeDifference = showDateTime - currentDateTime;
-                                      const minutesDifference = timeDifference / (1000 * 60);
-                                      
-                                      if (timeDifference < 0 || minutesDifference < 30) {
-                                        return 'opacity-50 cursor-not-allowed bg-zinc-800';
-                                      }
-                                      return selectedTime === time && selectedDay === day ? 'bg-white/30 border-2 border-white scale-[1.05] shadow-lg shadow-white/20' : 'bg-white/10 hover:bg-white/20 border-2 border-transparent';
-                                    })()}`}
-                                >
-                                  {time}
-                                </button>
-                              ))}
+                            {times.map((time) => {
+                                // Check if the time is disabled with the updated logic
+                                const isDisabled = isTimeDisabled(day, time);
+                                
+                                return (
+                                  <button
+                                    key={time}
+                                    onClick={() => !isDisabled && handleTimeSelect(day, time, screening.sala)}
+                                    className={`py-3 px-4 backdrop-blur-xl text-white font-medium rounded-xl transition-all duration-500 transform focus:outline-none focus:ring-2 focus:ring-white/30 
+                                      ${isDisabled 
+                                        ? 'opacity-50 cursor-not-allowed bg-zinc-800 line-through' 
+                                        : selectedTime === time && selectedDay === day 
+                                          ? 'bg-white/30 border-2 border-white scale-[1.05] shadow-lg shadow-white/20 hover:scale-[1.02] active:scale-95' 
+                                          : 'bg-white/10 hover:bg-white/20 border-2 border-transparent hover:scale-[1.02] active:scale-95'
+                                      }`}
+                                    disabled={isDisabled}
+                                    title={isDisabled ? "This showtime is no longer available for booking" : ""}
+                                  >
+                                    {time}
+                                  </button>
+                                );
+                            })}
                             </div>
                           </div>
                         ))}
@@ -296,4 +359,3 @@ const MovieDetailView = () => {
 };
 
 export default MovieDetailView;
-
