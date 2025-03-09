@@ -19,7 +19,7 @@ const PaymentForm = () => {
         email: ''
     });
 
-    console.log(movieDetails)
+    // console.log(movieDetails)
     
 
     useEffect(() => {
@@ -34,7 +34,7 @@ const PaymentForm = () => {
                         amount: total ,
                         currency: 'usd',
                         metadata: formData.email,
-                        movieDetails:movieDetails
+                        movieDetails:movieDetails,
                     })
                 })
                 if (!response.ok) {
@@ -61,25 +61,39 @@ const PaymentForm = () => {
             currency: 'usd',
             total: {
                 label: 'Movie Tickets',
-                amount: 100
+                amount: Math.round((total * 1.115 + 1) * 100) // Convert to cents and ensure proper amount
             },
             requestPayerName: true,
             requestPayerEmail: true,
+            // Explicitly enable Apple Pay
+            disableWallets: [],
+            requestShipping: false
         });
 
         pr.canMakePayment().then(result => {
-            if (result) {
+            console.log('Payment Request can make payment result:', result);
+            if (result && result.applePay) {
                 setPaymentRequest(pr);
             }
+        }).catch(error => {
+            console.error('Payment Request error:', error);
         });
 
         pr.on('paymentmethod', async (e) => {
             setProcessing(true);
             try {
                 console.log('PaymentMethod:', e.paymentMethod);
+                
                 setError(null);
                 setProcessing(false);
-                setStep('confirmation');
+                navigate('/purchase-complete', { 
+                    state: { 
+                        tickets, 
+                        total, 
+                        movieDetails,
+                        paymentId: e.paymentMethod.id 
+                    } 
+                });
                 e.complete('success');
             } catch (err) {
                 setError('An error occurred while processing your payment');
@@ -87,7 +101,7 @@ const PaymentForm = () => {
                 e.complete('fail');
             }
         });
-    }, [stripe]);
+    }, [stripe, total, tickets, movieDetails, navigate]);
 
     const elementStyles = {
         base: {
@@ -155,22 +169,33 @@ const PaymentForm = () => {
         }
     };
 
+    // Add styles for Apple Pay button container
+    const applePayButtonStyle = {
+        display: 'block',
+        width: '100%',
+        minHeight: '48px',
+        marginBottom: '16px'
+    };
+
     return (
         <form onSubmit={handleSubmit} className="lg:col-span-3 lg:order-1 space-y-6">
             {paymentRequest && (
                 <div className="mb-6">
-                    <PaymentRequestButtonElement
-                        options={{
-                            paymentRequest,
-                            style: {
-                                paymentRequestButton: {
-                                    type: 'default',
-                                    theme: 'dark',
-                                    height: '48px',
+                    <h3 className="text-xl font-semibold mb-4">Express Checkout</h3>
+                    <div className="apple-pay-button-container" style={applePayButtonStyle}>
+                        <PaymentRequestButtonElement
+                            options={{
+                                paymentRequest,
+                                style: {
+                                    paymentRequestButton: {
+                                        type: 'buy', // 'default', 'book', 'buy', or 'donate'
+                                        theme: 'dark',
+                                        height: '48px',
+                                    },
                                 },
-                            },
-                        }}
-                    />
+                            }}
+                        />
+                    </div>
                     <div className="relative my-8">
                         <div className="absolute inset-0 flex items-center">
                             <div className="w-full border-t border-white/10"></div>
