@@ -2,8 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardNumberElement, CardExpiryElement, CardCvcElement, useStripe, useElements, PaymentRequestButtonElement } from '@stripe/react-stripe-js';
+import movieService from '../Services/MovieServices';
 
 const stripePromise = loadStripe('pk_test_51QyWMfQIfffWksP334nTV1WPtzBjisMJX5RBzJow4rfNcg3iLwkKNCojMgxa72r0E5n7YSAplRCxhnkFOJW84iSC00ajWnaKpP');
+// const stripePromise = loadStripe('pk_live_51Q4Yh3GOdVFJ1feYPV1V1eV9OQijoiAQeP8EkSEvXJnCNLfLwnW0bvFUubusOkP28vkU3BnfGTGCVVxf0jBSF8Rv00hEawqZHO');
+
 
 const PaymentForm = () => {
     const stripe = useStripe();
@@ -12,16 +15,15 @@ const PaymentForm = () => {
     const location = useLocation();
     const [error, setError] = useState(null);
     const [processing, setProcessing] = useState(false);
-    const { tickets, total, movieDetails } = location.state;
+    const [clientSecret, setClientSecret] = useState(null); // Store client secret
+    const { tickets, total, movieDetails } = location.state || {};
     const [paymentRequest, setPaymentRequest] = useState(null);
     const [formData, setFormData] = useState({
         cardName: '',
         email: ''
     });
 
-    // console.log(movieDetails)
-    
-
+    // Fetch client secret when component mounts
     useEffect(() => {
         const fetchClientSecret = async () => {
             try {
@@ -31,154 +33,232 @@ const PaymentForm = () => {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        amount: total ,
+                        email: formData.email,
+                        name:formData.cardName,
+                        amount: Math.round(total * 1.115 + 1),
                         currency: 'usd',
-                        metadata: formData.email,
-                        movieDetails:movieDetails,
-                    })
-                })
+                        movieDetails: movieDetails,
+                    }),
+                });
                 if (!response.ok) {
-                    throw new Error('Failed to fetch client secret');
+                    const errorData = await response.text();
+                    throw new Error(`Payment server error: ${errorData}`);
                 }
                 const data = await response.json();
-                console.log(data);
-                
+                console.log(data)
+                if (!data.clientSecret) {
+                    throw new Error('Invalid response from payment server');
+                }
+                setClientSecret(data.clientSecret);
+                setError(null);
             } catch (error) {
-                throw error;
-                
+                console.error('Error fetching client secret:', error);
+                if (error.message.includes('Failed to fetch')) {
+                    setError('Payment server is currently unavailable. Please try again later.');
+                } else {
+                    setError(error.message || 'Failed to initialize payment');
+                }
             }
+        };
+
+        if (total > 0) {
+            fetchClientSecret();
         }
-
-        fetchClientSecret();
-    }, [])
-
+    }, [total, movieDetails, formData.email]); // Dependencies to refetch if these change
 
     useEffect(() => {
-        if (!stripe) return;
+        if (!stripe || !clientSecret) return;
 
         const pr = stripe.paymentRequest({
             country: 'US',
             currency: 'usd',
             total: {
                 label: 'Movie Tickets',
-                amount: Math.round((total * 1.115 + 1) * 100) // Convert to cents and ensure proper amount
+                amount: Math.round((total * 1.115 + 1) * 100), // Convert to cents
             },
             requestPayerName: true,
             requestPayerEmail: true,
-            // Explicitly enable Apple Pay
-            disableWallets: [],
-            requestShipping: false
         });
 
-        pr.canMakePayment().then(result => {
-            console.log('Payment Request can make payment result:', result);
-            if (result && result.applePay) {
-                setPaymentRequest(pr);
-            }
-        }).catch(error => {
-            console.error('Payment Request error:', error);
-        });
 
-        pr.on('paymentmethod', async (e) => {
+        pr.canMakePayment()
+            .then((result) => {
+                console.log('canMakePayment result:', result);
+                if (result) {
+                    //TODO:before make the pyment i need to store in supabase some stuff like amount, email, movie details, ticket id and transaction id from stripe
+                    setPaymentRequest(pr);
+                } 
+            })
+            .catch((error) => {
+                console.error('canMakePayment error:', error);
+            });
+
+
+        pr.on('paymentmethod', async (event) => {
             setProcessing(true);
             try {
-                console.log('PaymentMethod:', e.paymentMethod);
+                const { paymentIntent, error: confirmError } = await stripe.confirmPayment({
+                    clientSecret,
+                    payment_method: event.paymentMethod.id,
+                    
+                });
+
+                if (confirmError) {
+                    throw confirmError;
+                }
+                //save transaction
+                //save ticket
+                //send email
+                event.complete('success');
                 
                 setError(null);
                 setProcessing(false);
-                navigate('/purchase-complete', { 
-                    state: { 
-                        tickets, 
-                        total, 
+                
+                navigate('/purchase-complete', {
+                    state: {
+                        tickets,
+                        total,
                         movieDetails,
-                        paymentId: e.paymentMethod.id 
-                    } 
+                        paymentId: paymentIntent.id,
+                    },
                 });
-                e.complete('success');
             } catch (err) {
+                console.error('Payment error:', err);
                 setError('An error occurred while processing your payment');
+                event.complete('fail');
                 setProcessing(false);
-                e.complete('fail');
             }
         });
-    }, [stripe, total, tickets, movieDetails, navigate]);
+    }, [stripe, clientSecret, total, tickets, movieDetails, navigate]);
+
+
+    async function saveTickets(paymentData) {
+        try {
+            //calculate the total number of tickets 
+            const totalTicketCount = Object.values(tickets).reduce((sum, count) => sum + count, 0);
+
+            const ticket = {
+                paymentId: paymentData.paymentId,
+                name:formData.cardName,
+                email: formData.email,
+                amount: (total * 1.115 + 1).toFixed(2),
+                movieDetails: movieDetails,
+                scanned_count: 0,
+                max_scans:totalTicketCount,
+                tickets: tickets,
+                status: 'active',
+            };
+            console.log(ticket);
+            await movieService.storeMovieTickets(ticket);
+        } catch (error) {
+            console.error('Error saving tickets:', error);
+            throw error;
+        }
+    }
+
+    async function saveTransaction(paymentData) {
+        try {
+            const transaction = {
+                paymentId: paymentData.id,
+                email: formData.email,
+                name:formData.cardName,
+                amount: (total * 1.115 + 1).toFixed(2),
+                tax: (total * 0.115).toFixed(2),
+                movieId: movieDetails.movieId,
+                movieName:movieDetails.title,
+                tickets: tickets,
+                status: 'completed',
+
+            }
+            await movieService.storeTransaction(transaction);
+
+        } catch (error) {
+            console.error('Error saving transaction:', error);
+            throw error;
+        }
+    }
 
     const elementStyles = {
         base: {
             color: 'white',
             fontFamily: 'inherit',
             fontSize: '16px',
-            '::placeholder': {
-                color: '#64748b'
-            },
+            '::placeholder': { color: '#64748b' },
             backgroundColor: 'transparent',
-            iconColor: 'white'
+            iconColor: 'white',
         },
         invalid: {
             color: '#ef4444',
-            iconColor: '#ef4444'
-        }
+            iconColor: '#ef4444',
+        },
     };
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
+        setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!stripe || !elements) return;
+        if (!stripe || !elements || !clientSecret) return;
 
         setProcessing(true);
         const cardElement = elements.getElement(CardNumberElement);
 
         try {
-            const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
-                type: 'card',
-                card: cardElement,
-                billing_details: {
-                    name: formData.cardName,
-                    email: formData.email
-                }
+            const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+                payment_method: {
+                    card: cardElement,
+                    billing_details: {
+                        name: formData.cardName,
+                        email: formData.email,
+                    },
+                },
             });
 
-            if (error) {
-                setError(error.message);
+            if (confirmError) {
+                setError(confirmError.message);
                 setProcessing(false);
+            } else if (paymentIntent.status === 'succeeded') {
+                //store tickets and transaction
+                await saveTickets({ paymentId: paymentIntent.id });
+                await saveTransaction({ paymentId: paymentIntent.id });
 
-            }else if (paymentIntent.status === 'succeeded') {
-                //here create the ticket in the database with the id of the ticket 
                 setError(null);
                 setProcessing(false);
-                navigate('/checkout/confirmation', { 
+                navigate('/purchase-complete', {
                     state: { 
                         tickets, 
                         total, 
-                        movieDetails,
+                        movieDetails, 
                         paymentId: paymentIntent.id 
-                    } 
+                    },
                 });
             }
-
         } catch (err) {
+            console.error('Payment error:', err);
             setError('An error occurred while processing your payment');
             setProcessing(false);
         }
     };
 
-    // Add styles for Apple Pay button container
     const applePayButtonStyle = {
         display: 'block',
         width: '100%',
         minHeight: '48px',
-        marginBottom: '16px'
+        marginBottom: '16px',
     };
 
     return (
-        <form onSubmit={handleSubmit} className="lg:col-span-3 lg:order-1 space-y-6">
+        <form onSubmit={handleSubmit} className="lg:col-span-3 lg:order-1 space-y-6 relative">
+            {processing && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+                    <div className="bg-white/10 backdrop-blur-xl p-8 rounded-2xl flex flex-col items-center">
+                        <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin mb-4"></div>
+                        <p className="text-white font-medium">Processing your payment...</p>
+                    </div>
+                </div>
+            )}
             {paymentRequest && (
                 <div className="mb-6">
                     <h3 className="text-xl font-semibold mb-4">Express Checkout</h3>
@@ -188,7 +268,7 @@ const PaymentForm = () => {
                                 paymentRequest,
                                 style: {
                                     paymentRequestButton: {
-                                        type: 'buy', // 'default', 'book', 'buy', or 'donate'
+                                        type: 'buy',
                                         theme: 'dark',
                                         height: '48px',
                                     },
@@ -220,42 +300,26 @@ const PaymentForm = () => {
                         required
                     />
                 </div>
-
                 <div>
                     <label htmlFor="card-number" className="block text-sm font-medium mb-2">Card Number</label>
                     <div className="relative w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus-within:border-white/20 transition-colors">
-                        <CardNumberElement
-                            id="card-number"
-                            options={{
-                                style: elementStyles,
-                                placeholder: '1234 5678 9012 3456',
-                                showIcon: true
-                            }}
-                        />
+                        <CardNumberElement options={{ style: elementStyles, placeholder: '1234 5678 9012 3456', showIcon: true }} />
                     </div>
                 </div>
-
                 <div className="grid grid-cols-2 gap-4">
                     <div>
                         <label htmlFor="card-expiry" className="block text-sm font-medium mb-2">Expiry Date</label>
                         <div className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus-within:border-white/20 transition-colors">
-                            <CardExpiryElement
-                                id="card-expiry"
-                                options={{ style: elementStyles }}
-                            />
+                            <CardExpiryElement options={{ style: elementStyles }} />
                         </div>
                     </div>
                     <div>
                         <label htmlFor="card-cvc" className="block text-sm font-medium mb-2">CVV</label>
                         <div className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus-within:border-white/20 transition-colors">
-                            <CardCvcElement
-                                id="card-cvc"
-                                options={{ style: elementStyles }}
-                            />
+                            <CardCvcElement options={{ style: elementStyles }} />
                         </div>
                     </div>
                 </div>
-
                 <div>
                     <label htmlFor="email" className="block text-sm font-medium mb-2">Email for Receipt</label>
                     <input
@@ -270,19 +334,14 @@ const PaymentForm = () => {
                     />
                 </div>
             </div>
-
-            {error && (
-                <div className="text-red-500 text-sm mt-2">{error}</div>
-            )}
-
+            {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
             <button
                 type="submit"
-                disabled={!stripe || processing}
-                className={`w-full px-8 py-4 bg-white text-black rounded-xl font-semibold transition-all duration-300 transform hover:scale-[1.02] ${processing || !stripe ? 'opacity-50 cursor-not-allowed' : 'hover:bg-zinc-200'}`}
+                disabled={!stripe || processing || !clientSecret}
+                className={`w-full px-8 py-4 bg-white text-black rounded-xl font-semibold transition-all duration-300 transform hover:scale-[1.02] ${processing || !stripe || !clientSecret ? 'opacity-50 cursor-not-allowed' : 'hover:bg-zinc-200'}`}
             >
-                {processing ? 'Processing...' : `Pay $${(total * 1.115).toFixed(2)}`}
+                {processing ? 'Processing...' : `Pay $${(total * 1.115 + 1).toFixed(2)}`}
             </button>
-
             <p className="text-center text-sm text-zinc-400 mt-4">
                 By completing this purchase, you agree to our{' '}
                 <button type="button" className="text-white hover:underline">Terms of Service</button>
@@ -293,122 +352,33 @@ const PaymentForm = () => {
     );
 };
 
+// Wrap the CheckOutView with Elements (unchanged)
 const CheckOutView = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const [step, setStep] = useState('payment'); // 'payment' or 'confirmation'
-    const [formData, setFormData] = useState({
-        cardNumber: '',
-        cardName: '',
-        expiryDate: '',
-        cvv: '',
-        // email: '',
-    });
-
     const { tickets = { adult: 0, senior: 0, kid: 0 }, total = 0, movieDetails = {} } = location.state || {};
 
     useEffect(() => {
         window.scrollTo(0, 0);
     }, []);
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        // Here you would typically process the payment
-        setStep('confirmation');
-    };
-
-    const formatCardNumber = (value) => {
-        return value.replace(/\s/g, '').replace(/(.{4})/g, '$1 ').trim();
-    };
-
-    if (step === 'confirmation') {
-        return (
-            <div className="min-h-screen bg-black text-white">
-                <div className="max-w-4xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
-                    <div className="text-center">
-                        <div className="mb-8">
-                            <div className="h-16 w-16 bg-white/10 backdrop-blur-xl rounded-full flex items-center justify-center mx-auto mb-4">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                </svg>
-                            </div>
-                            <h2 className="text-3xl font-bold mb-2">Thank You for Your Purchase!</h2>
-                            <p className="text-zinc-400">Your tickets have been confirmed</p>
-                        </div>
-
-                        <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 mb-8">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                <div className="text-left">
-                                    <h3 className="text-lg font-semibold mb-2">Movie Details</h3>
-                                    <p className="text-zinc-400">Dune Part Two</p>
-                                    <p className="text-zinc-400">Thursday, March 28 at 7:00 PM</p>
-                                </div>
-                                <div className="text-left">
-                                    <h3 className="text-lg font-semibold mb-2">Ticket Summary</h3>
-                                    <p className="text-zinc-400">2 Adult Tickets</p>
-                                    <p className="text-zinc-400">1 Senior Ticket</p>
-                                    <p className="text-zinc-400">Total: $34.97</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <button
-                            onClick={() => navigate('/')}
-                            className="px-8 py-4 bg-white text-black rounded-xl font-semibold transition-all duration-300 transform hover:scale-[1.02] hover:bg-zinc-200"
-                        >
-                            Return to Home
-                        </button>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
     return (
         <div className="min-h-screen bg-black text-white">
-            {/* Back button */}
-            <button
-
-                onClick={() => navigate(-1)}
-                className="fixed top-2 left-4 sm:left-8 z-50 text-white hover:text-zinc-300 transition-all duration-300 
-          flex items-center gap-2 group bg-black/40 hover:bg-black/60 backdrop-blur-lg 
-          rounded-full p-3.5 border border-white/10 hover:border-white/20 shadow-lg"
-                style={{ position: 'fixed' }}
-            >
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 transform group-hover:-translate-x-1.5 transition-transform duration-300"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                >
+            <button onClick={() => navigate(-1)} className="fixed top-2 left-4 sm:left-8 z-50 text-white hover:text-zinc-300 transition-all duration-300 flex items-center gap-2 group bg-black/40 hover:bg-black/60 backdrop-blur-lg rounded-full p-3.5 border border-white/10 hover:border-white/20 shadow-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 transform group-hover:-translate-x-1.5 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
             </button>
-
             <div className="max-w-4xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
                 <div className="text-center mb-12">
                     <h1 className="text-3xl font-bold mb-2">Complete Your Purchase</h1>
                     <p className="text-zinc-400">Please enter your payment details below</p>
                 </div>
-
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-                    {/* Order Summary - Moved above payment form */}
                     <div className="lg:col-span-2 lg:order-2 space-y-8">
-                        {/* Order Summary */}
                         <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/10 hover:border-white/20 transition-all duration-300 overflow-hidden">
                             <div className="p-6 space-y-6">
                                 <h3 className="text-2xl font-semibold">Order Summary</h3>
-                                
-                                {/* Movie Details */}
                                 <div className="space-y-4 pb-6 border-b border-white/10">
                                     <h4 className="text-lg font-medium text-zinc-300">{movieDetails.title}</h4>
                                     <div className="flex flex-wrap gap-2">
@@ -417,8 +387,6 @@ const CheckOutView = () => {
                                         <span className="px-3 py-1 bg-white/5 rounded-full text-sm text-zinc-400">{movieDetails.sala}</span>
                                     </div>
                                 </div>
-                        
-                                {/* Tickets Breakdown */}
                                 <div className="space-y-4 pb-6 border-b border-white/10">
                                     {tickets.adult > 0 && (
                                         <div className="flex justify-between items-center">
@@ -448,8 +416,6 @@ const CheckOutView = () => {
                                         </div>
                                     )}
                                 </div>
-                        
-                                {/* Total */}
                                 <div className="space-y-4">
                                     <div className="flex justify-between items-center text-zinc-400">
                                         <p>Subtotal</p>
@@ -470,16 +436,10 @@ const CheckOutView = () => {
                                 </div>
                             </div>
                         </div>
-                    
-                        {/* Removing the Add Food & Drinks Button */}
                     </div>
-
-                    {/* Payment Form */}
                     <Elements stripe={stripePromise}>
                         <PaymentForm />
                     </Elements>
-
-                    {/* Removing the duplicate Order Summary section */}
                 </div>
             </div>
         </div>

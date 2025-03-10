@@ -32,6 +32,21 @@ class MovieService {
             
         }
     }
+
+    async storeMovieTickets(ticket) {
+        try {
+            const {data, error} = await supabase.from('MovieTickets').insert(ticket).single();
+            if(error) {
+                console.error("error storing movie tickets");
+                throw error;
+            }
+            return data;
+            
+        } catch (error) {
+            throw error;
+            
+        }
+    }
 }
 
 const movieService = new MovieService();

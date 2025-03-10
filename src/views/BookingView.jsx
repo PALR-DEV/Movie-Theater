@@ -71,6 +71,7 @@ const BookingView = () => {
                 total,
                 movieDetails: {
                     title: movie?.title,
+                    movieId: movieId,
                     sala: movie?.screenings[0].sala,
                     day,
                     time

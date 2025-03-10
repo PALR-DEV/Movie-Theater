@@ -2,6 +2,8 @@ import React, { useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { QRCodeSVG as QRCode } from 'qrcode.react';
 import html2canvas from 'html2canvas';
+import Lottie from 'lottie-react';
+import celebrationAnimation from '../assets/celebration.json';
 
 const PurchaseCompleteView = () => {
     const location = useLocation();
@@ -61,7 +63,8 @@ const PurchaseCompleteView = () => {
         <div className="min-h-screen bg-black text-white">
             <div className="max-w-4xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
                 <div className="text-center">
-                    {/* Success Icon */}
+
+                    {/* Success Message */}
                     <div className="mb-8 animate-fade-in">
                         <div className="h-16 w-16 bg-white/10 backdrop-blur-xl rounded-full flex items-center justify-center mx-auto mb-4">
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -69,7 +72,12 @@ const PurchaseCompleteView = () => {
                             </svg>
                         </div>
                         <h2 className="text-3xl font-bold mb-2">Thank You for Your Purchase!</h2>
-                        <p className="text-zinc-400">Your tickets have been confirmed</p>
+                        <p className="text-zinc-400 mb-4">Your tickets have been confirmed</p>
+                        <p className="text-zinc-300 text-lg">
+                            We've sent your tickets and receipt to your email.
+                            <br />
+                            Please check your inbox (and spam folder, just in case).
+                        </p>
                     </div>
 
                     {/* Ticket Content to be Saved */}
