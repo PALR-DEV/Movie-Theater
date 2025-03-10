@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { loadStripe } from '@stripe/stripe-js';
-import { Elements, CardNumberElement, CardExpiryElement, CardCvcElement, useStripe, useElements, PaymentRequestButtonElement } from '@stripe/react-stripe-js';
+import { Elements, CardNumberElement, CardExpiryElement, CardCvcElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import movieService from '../Services/MovieServices';
 
 const stripePromise = loadStripe('pk_test_51QyWMfQIfffWksP334nTV1WPtzBjisMJX5RBzJow4rfNcg3iLwkKNCojMgxa72r0E5n7YSAplRCxhnkFOJW84iSC00ajWnaKpP');
@@ -17,7 +17,8 @@ const PaymentForm = () => {
     const [processing, setProcessing] = useState(false);
     const [clientSecret, setClientSecret] = useState(null); // Store client secret
     const { tickets, total, movieDetails } = location.state || {};
-    const [paymentRequest, setPaymentRequest] = useState(null);
+
+    const [ticketId, setTicketId] = useState(null);
     const [formData, setFormData] = useState({
         cardName: '',
         email: ''
@@ -66,70 +67,7 @@ const PaymentForm = () => {
         }
     }, [total, movieDetails, formData.email]); // Dependencies to refetch if these change
 
-    useEffect(() => {
-        if (!stripe || !clientSecret) return;
 
-        const pr = stripe.paymentRequest({
-            country: 'US',
-            currency: 'usd',
-            total: {
-                label: 'Movie Tickets',
-                amount: Math.round((total * 1.115 + 1) * 100), // Convert to cents
-            },
-            requestPayerName: true,
-            requestPayerEmail: true,
-        });
-
-
-        pr.canMakePayment()
-            .then((result) => {
-                console.log('canMakePayment result:', result);
-                if (result) {
-                    //TODO:before make the pyment i need to store in supabase some stuff like amount, email, movie details, ticket id and transaction id from stripe
-                    setPaymentRequest(pr);
-                } 
-            })
-            .catch((error) => {
-                console.error('canMakePayment error:', error);
-            });
-
-
-        pr.on('paymentmethod', async (event) => {
-            setProcessing(true);
-            try {
-                const { paymentIntent, error: confirmError } = await stripe.confirmPayment({
-                    clientSecret,
-                    payment_method: event.paymentMethod.id,
-                    
-                });
-
-                if (confirmError) {
-                    throw confirmError;
-                }
-                //save transaction
-                //save ticket
-                //send email
-                event.complete('success');
-                
-                setError(null);
-                setProcessing(false);
-                
-                navigate('/purchase-complete', {
-                    state: {
-                        tickets,
-                        total,
-                        movieDetails,
-                        paymentId: paymentIntent.id,
-                    },
-                });
-            } catch (err) {
-                console.error('Payment error:', err);
-                setError('An error occurred while processing your payment');
-                event.complete('fail');
-                setProcessing(false);
-            }
-        });
-    }, [stripe, clientSecret, total, tickets, movieDetails, navigate]);
 
 
     async function saveTickets(paymentData) {
@@ -148,7 +86,7 @@ const PaymentForm = () => {
                 tickets: tickets,
                 status: 'active',
             };
-            console.log(ticket);
+
             await movieService.storeMovieTickets(ticket);
         } catch (error) {
             console.error('Error saving tickets:', error);
@@ -242,12 +180,7 @@ const PaymentForm = () => {
         }
     };
 
-    const applePayButtonStyle = {
-        display: 'block',
-        width: '100%',
-        minHeight: '48px',
-        marginBottom: '16px',
-    };
+
 
     return (
         <form onSubmit={handleSubmit} className="lg:col-span-3 lg:order-1 space-y-6 relative">
@@ -259,33 +192,7 @@ const PaymentForm = () => {
                     </div>
                 </div>
             )}
-            {paymentRequest && (
-                <div className="mb-6">
-                    <h3 className="text-xl font-semibold mb-4">Express Checkout</h3>
-                    <div className="apple-pay-button-container" style={applePayButtonStyle}>
-                        <PaymentRequestButtonElement
-                            options={{
-                                paymentRequest,
-                                style: {
-                                    paymentRequestButton: {
-                                        type: 'buy',
-                                        theme: 'dark',
-                                        height: '48px',
-                                    },
-                                },
-                            }}
-                        />
-                    </div>
-                    <div className="relative my-8">
-                        <div className="absolute inset-0 flex items-center">
-                            <div className="w-full border-t border-white/10"></div>
-                        </div>
-                        <div className="relative flex justify-center text-sm">
-                            <span className="px-4 text-zinc-400 bg-black">Or pay with card</span>
-                        </div>
-                    </div>
-                </div>
-            )}
+
             <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 space-y-6">
                 <div>
                     <label htmlFor="cardName" className="block text-sm font-medium mb-2">Cardholder Name</label>

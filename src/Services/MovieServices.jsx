@@ -47,6 +47,22 @@ class MovieService {
             
         }
     }
+
+    async storeTransaction(transaction) {
+        try {
+            const {data, error} = await supabase.from('Transactions').insert(transaction).single();
+            if(error) {
+                console.error("error storing transaction");
+                throw error;
+            }
+            return data;
+            
+            
+        } catch (error) {
+            throw error;
+            
+        }
+    }
 }
 
 const movieService = new MovieService();
