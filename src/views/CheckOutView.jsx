@@ -76,6 +76,7 @@ const PaymentForm = () => {
             const totalTicketCount = Object.values(tickets).reduce((sum, count) => sum + count, 0);
 
             const ticket = {
+                ticketId: crypto.randomUUID(), 
                 paymentId: paymentData.paymentId,
                 name:formData.cardName,
                 email: formData.email,
@@ -88,6 +89,7 @@ const PaymentForm = () => {
             };
 
             await movieService.storeMovieTickets(ticket);
+
         } catch (error) {
             console.error('Error saving tickets:', error);
             throw error;
