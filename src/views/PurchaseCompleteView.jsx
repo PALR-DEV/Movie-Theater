@@ -9,7 +9,7 @@ const PurchaseCompleteView = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const ticketRef = useRef(null);
-    const { tickets, total, movieDetails, paymentId } = location.state || {};
+    const { tickets, total, movieDetails, paymentId, ticketId } = location.state || {};
     const [showConfetti, setShowConfetti] = useState(true);
 
     useEffect(() => {
@@ -19,13 +19,19 @@ const PurchaseCompleteView = () => {
     return (
         <div className="min-h-screen bg-black text-white relative">
             {showConfetti && (
-                <div className="fixed inset-0 pointer-events-none z-50">
+                <div className="fixed inset-x-0 bottom-0 h-screen pointer-events-none z-50" style={{ transformOrigin: 'bottom' }}>
                     <Lottie
                         animationData={confettiAnimation}
                         loop={false}
                         autoplay={true}
                         onComplete={() => setShowConfetti(false)}
-                        style={{ position: 'absolute', width: '100%', height: '100%' }}
+                        style={{
+                            position: 'absolute',
+                            width: '100%',
+                            height: '100%',
+                            transform: 'scale(1.2)',
+                            bottom: 0
+                        }}
                     />
                 </div>
             )}
@@ -61,7 +67,7 @@ const PurchaseCompleteView = () => {
                                         className="w-full h-auto"
                                     />
                                 </div>
-                                <p className="text-lg font-mono mb-2">{paymentId}</p>
+                                <p className="text-lg font-mono mb-2">{ticketId}</p>
                                 <p className="text-sm text-zinc-400">Show this QR code at the theater entrance</p>
                             </div>
                         </div>

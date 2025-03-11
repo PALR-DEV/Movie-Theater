@@ -15,7 +15,7 @@ const BookingView = () => {
     useEffect(() => {
         const fetchMovie = async() => {
             const getMovie = await movieService.getMoviebyID(movieId);
-            // console.log(getMovie)
+            console.log(getMovie)
             setMovie(getMovie);
         }
         fetchMovie();
@@ -27,6 +27,7 @@ const BookingView = () => {
         kid: 0
     });
 
+    //FIXME: In the future I need to get this prices from the database not hard coded like this 
     const [total, setTotal] = useState(0);
     const PRICES = {
         adult: 12.99,
@@ -109,7 +110,7 @@ const BookingView = () => {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent md:bg-gradient-to-t md:from-black md:via-black/50 md:to-transparent" />
                 <div className="absolute inset-0 flex flex-col justify-center items-center text-center px-8">
-                    <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-4 max-w-4xl mx-auto leading-tight">Dune Part Two</h1>
+                    <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-4 max-w-4xl mx-auto leading-tight">{movie?.title}</h1>
                     <p className="text-zinc-300 text-xl md:text-2xl">{day} at {time}</p>
                 </div>
             </div>

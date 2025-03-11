@@ -1,7 +1,7 @@
 class EmailServices {
     async sendEmail(ticket)  {
         try {
-            await fetch('http://localhost:8000/api/sendReceiptEmail', {
+            await fetch('http://localhost:8000/api/email/send-receipt-confirmation', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

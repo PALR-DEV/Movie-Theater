@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardNumberElement, CardExpiryElement, CardCvcElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import movieService from '../Services/MovieServices';
+import emailService from '../Services/EmailServices';
 
 const stripePromise = loadStripe('pk_test_51QyWMfQIfffWksP334nTV1WPtzBjisMJX5RBzJow4rfNcg3iLwkKNCojMgxa72r0E5n7YSAplRCxhnkFOJW84iSC00ajWnaKpP');
 // const stripePromise = loadStripe('pk_live_51Q4Yh3GOdVFJ1feYPV1V1eV9OQijoiAQeP8EkSEvXJnCNLfLwnW0bvFUubusOkP28vkU3BnfGTGCVVxf0jBSF8Rv00hEawqZHO');
@@ -99,7 +100,7 @@ const PaymentForm = () => {
     async function saveTransaction(paymentData) {
         try {
             const transaction = {
-                paymentId: paymentData.id,
+                paymentId: paymentData.paymentId,
                 email: formData.email,
                 name:formData.cardName,
                 amount: (total * 1.115 + 1).toFixed(2),
@@ -114,6 +115,36 @@ const PaymentForm = () => {
 
         } catch (error) {
             console.error('Error saving transaction:', error);
+            throw error;
+        }
+    }
+
+    async function sendReceiptEmail(paymentData) {
+        const totalTicketCount = Object.values(tickets).reduce((sum, count) => sum + count, 0);
+        try {
+            
+            const ticket = {
+                ticketId: crypto.randomUUID(), 
+                paymentId: paymentData.paymentId,
+                name:formData.cardName,
+                email: formData.email,
+                //FIXME: In the future I need this to be in the database not hard coded
+                ticketPrices: {
+                    adult: 12.99,
+                    senior: 8.99,
+                    kid: 6.99
+                },
+                amount: (total * 1.115 + 1).toFixed(2),
+                movieDetails: movieDetails,
+                scanned_count: 0,
+                max_scans:totalTicketCount,
+                tickets: tickets,
+                status: 'active',
+            };
+            await emailService.sendEmail(ticket);
+            
+        } catch (error) {
+            console.error('Error sending receipt email:', error);
             throw error;
         }
     }
@@ -163,6 +194,8 @@ const PaymentForm = () => {
                 //store tickets and transaction
                 await saveTickets({ paymentId: paymentIntent.id });
                 await saveTransaction({ paymentId: paymentIntent.id });
+                await sendReceiptEmail({ paymentId: paymentIntent.id });
+
 
                 setError(null);
                 setProcessing(false);

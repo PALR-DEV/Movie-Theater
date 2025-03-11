@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import movieService from '../Services/MovieServices';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const HomeView = () => {
     const navigate = useNavigate();
@@ -99,10 +100,10 @@ const HomeView = () => {
         if (Math.abs(swipeDistance) > minSwipeDistance) {
             if (swipeDistance > 0) {
                 // Swipe right
-                setCurrentSlide((prev) => (prev === 0 ? nowShowing.length - 1 : prev - 1));
+                setCurrentSlide((prev) => (prev === 0 ? movies.length - 1 : prev - 1));
             } else {
                 // Swipe left
-                setCurrentSlide((prev) => (prev + 1) % nowShowing.length);
+                setCurrentSlide((prev) => (prev + 1) % movies.length);
             }
         }
         startX.current = null;
@@ -113,11 +114,14 @@ const HomeView = () => {
     };
 
     useEffect(() => {
-        const interval = setInterval(() => {
-            setCurrentSlide((prev) => (prev + 1) % nowShowing.length);
-        }, 6000);
-        return () => clearInterval(interval);
-    }, []);
+        // Only set up the interval if there are multiple movies
+        if (movies.length > 1) {
+            const interval = setInterval(() => {
+                setCurrentSlide((prev) => (prev + 1) % movies.length);
+            }, 6000);
+            return () => clearInterval(interval);
+        }
+    }, [movies.length]);
 
     return (
         <div className="bg-black min-h-[100dvh] overflow-x-hidden">
@@ -208,20 +212,58 @@ const HomeView = () => {
                 </div>
             </header>
 
-            {/* Enhanced Movie Slider for Mobile */}
+            {/* Movie Header Section - Conditional Rendering Based on Number of Movies */}
             <div className="relative h-[100dvh] overflow-hidden">
-                {/* Movie Slides */}
-                {movies.length > 0 && (
+                {movies.length === 0 ? (
+                    // Loading state with spinner
+                    <div className="flex items-center justify-center h-full bg-zinc-900">
+                        <LoadingSpinner />                        
+                    </div>
+                ) : movies.length === 1 ? (
+                    // Single movie - show static display without slider functionality
+                    <div className="relative h-full overflow-hidden">
+                        <div className="absolute inset-0">
+                            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent z-10"></div>
+                            <img
+                                src={movies[0].poster_url}
+                                alt={movies[0].title}
+                                className="w-full h-full object-cover"
+                            />
+                        </div>
+                        <div className="absolute bottom-0 left-0 right-0 z-20 p-4 sm:p-8 md:p-16">
+                            <div className="container mx-auto">
+                                <h1 className="text-3xl sm:text-4xl md:text-7xl font-bold text-white mb-2 md:mb-4">{movies[0].title}</h1>
+                                <p className="text-lg sm:text-xl md:text-2xl text-gray-300 mb-4 md:mb-6 line-clamp-2">{movies[0].tagline}</p>
+                                <div className="flex flex-wrap items-center gap-3 text-sm text-gray-300 mb-6">
+                                    <span>{movies[0].duration}</span>
+                                    {movies[0].categories.map((category, idx) => (
+                                        <span key={idx} className="text-xs px-1.5 py-0.5 bg-white/10 backdrop-blur-sm rounded-sm text-white/90">
+                                            {category}
+                                        </span>
+                                    ))}
+                                </div>
+                                <button 
+                                    onClick={() => navigate(`/movie/${movies[0].id}`)}
+                                    className="w-full sm:w-auto bg-white text-black px-8 py-4 rounded-lg hover:bg-gray-200 transition-colors text-lg font-medium"
+                                >
+                                    Get Tickets
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    // Multiple movies - show slider with controls
                     <div 
-                        className={`relative h-full overflow-hidden ${movies.length > 1 ? (isDragging ? 'cursor-grabbing' : 'cursor-grab') : ''}`}
-                        onTouchStart={movies.length > 1 ? handleStart : undefined}
-                        onTouchMove={movies.length > 1 ? handleMove : undefined}
-                        onTouchEnd={movies.length > 1 ? handleEnd : undefined}
+                        className={`relative h-full overflow-hidden ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+                        onTouchStart={handleStart}
+                        onTouchMove={handleMove}
+                        onTouchEnd={handleEnd}
+                        style={{ minHeight: '100vh' }}
                     >
-                        {movies.slice(0, 3).map((movie, index) => (
+                        {movies.map((movie, index) => (
                             <div
                                 key={index}
-                                className={`absolute inset-0 transition-opacity duration-1000 ${movies.length === 1 ? 'opacity-100' : (currentSlide === index ? 'opacity-100' : 'opacity-0')}`}
+                                className={`absolute inset-0 transition-opacity duration-1000 ${currentSlide === index ? 'opacity-100' : 'opacity-0'}`}
                             >
                                 {/* Movie Background */}
                                 <div className="absolute inset-0">
@@ -256,22 +298,20 @@ const HomeView = () => {
                                 </div>
                             </div>
                         ))}
-                    </div>
-                )}
-
-                {/* Modified Slider Controls - only show for multiple movies */}
-                {movies.length > 1 && movies.length <= 3 && (
-                    <div className="absolute bottom-32 right-8 md:right-16 z-30 flex flex-col items-end space-y-4">
-                        <div className="flex space-x-2">
-                            {movies.slice(0, 3).map((_, index) => (
-                                <button
-                                    key={index}
-                                    onClick={() => setCurrentSlide(index)}
-                                    className={`w-16 h-1 rounded-full transition-all duration-300 ${
-                                        currentSlide === index ? 'bg-white' : 'bg-gray-600'
-                                    }`}
-                                />
-                            ))}
+                        
+                        {/* Slider Controls - only show for multiple movies */}
+                        <div className="absolute bottom-32 right-8 md:right-16 z-30 flex flex-col items-end space-y-4">
+                            <div className="flex space-x-2">
+                                {movies.map((_, index) => (
+                                    <button
+                                        key={index}
+                                        onClick={() => setCurrentSlide(index)}
+                                        className={`w-16 h-1 rounded-full transition-all duration-300 ${
+                                            currentSlide === index ? 'bg-white' : 'bg-gray-600'
+                                        }`}
+                                    />
+                                ))}
+                            </div>
                         </div>
                     </div>
                 )}

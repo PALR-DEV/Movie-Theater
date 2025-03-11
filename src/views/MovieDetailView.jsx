@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import movieService from '../Services/MovieServices';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const MovieDetailView = () => {
   const navigate = useNavigate();
@@ -87,6 +88,7 @@ const MovieDetailView = () => {
     const fetchMovies = async () => {
       try {
         const movie = await movieService.getMoviebyID(id);
+
         const formattedMovie = {
           ...movie,
           categories: JSON.parse(movie.categories),
@@ -157,52 +159,8 @@ const MovieDetailView = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-black">
-        <div className="md:flex md:min-h-screen">
-          {/* Skeleton Poster */}
-          <div className="relative w-full md:w-1/2 h-[80vh] md:h-screen overflow-hidden">
-            <div className="w-full h-full bg-white/10 animate-pulse" />
-          </div>
-
-          {/* Skeleton Content */}
-          <div className="relative -mt-40 md:mt-0 md:w-1/2 md:flex md:items-center">
-            <div className="px-6 pb-12 md:px-16 md:py-0 w-full max-w-3xl mx-auto">
-              <div className="space-y-8 md:space-y-10">
-                {/* Title Skeleton */}
-                <div className="h-16 bg-white/10 rounded-lg animate-pulse" />
-
-                {/* Trailer Button Skeleton */}
-                <div className="h-12 w-40 bg-white/10 rounded-full animate-pulse" />
-
-                {/* Categories Skeleton */}
-                <div className="flex flex-wrap gap-3">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="h-8 w-20 bg-white/10 rounded-full animate-pulse" />
-                  ))}
-                </div>
-
-                {/* Showtimes Skeleton */}
-                <div className="space-y-6">
-                  <div className="h-8 w-32 bg-white/10 rounded-lg animate-pulse" />
-                  <div className="space-y-8">
-                    {[1, 2].map((section) => (
-                      <div key={section} className="space-y-6">
-                        <div className="space-y-4">
-                          <div className="h-6 w-24 bg-white/10 rounded-lg animate-pulse" />
-                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                            {[1, 2, 3, 4].map((time) => (
-                              <div key={time} className="h-12 bg-white/10 rounded-xl animate-pulse" />
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <LoadingSpinner />
       </div>
     );
   }
