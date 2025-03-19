@@ -219,11 +219,13 @@ const MovieDetailView = () => {
               </div>
               
               {/* Movie Details */}
-              <div className="flex flex-wrap gap-3">
-                <span className="px-5 py-2 bg-white/10 backdrop-blur-xl text-white text-sm font-medium rounded-full hover:bg-white/15 transition-colors duration-300">{movie.duration}</span>
-                {movie.categories && movie.categories.map((category, index) => (
-                  <span key={index} className="px-5 py-2 bg-white/10 backdrop-blur-xl text-white text-sm font-medium rounded-full hover:bg-white/15 transition-colors duration-300">{category}</span>
-                ))}
+              <div className="space-y-6">
+                <div className="flex flex-wrap items-center gap-4">
+                  <span className="px-5 py-2 bg-white/10 backdrop-blur-xl text-white text-sm font-medium rounded-full hover:bg-white/15 transition-colors duration-300">{movie.duration}</span>
+                  {movie.categories && movie.categories.map((category, index) => (
+                    <span key={index} className="px-5 py-2 bg-white/10 backdrop-blur-xl text-white text-sm font-medium rounded-full hover:bg-white/15 transition-colors duration-300">{category}</span>
+                  ))}
+                </div>
               </div>
 
 
