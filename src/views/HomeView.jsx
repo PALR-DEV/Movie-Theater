@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import movieService from '../Services/MovieServices';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { doesHaveMenuItems } from '../Services/MenuItemsService';
 
 const HomeView = () => {
     const navigate = useNavigate();
@@ -17,6 +18,21 @@ const HomeView = () => {
     const currentY = useRef(null);
     const [isDragging, setIsDragging] = useState(false);
     const [movies, setMovies] = useState([])
+    const [hasMenuItems, setHasMenuItems] = useState(false);
+
+    useEffect(() => {
+        const checkMenuItems = async () => {
+            try {
+                const result = await doesHaveMenuItems();
+                setHasMenuItems(result);
+            } catch (error) {
+                console.error('Error checking menu items:', error);
+                setHasMenuItems(false);
+            }
+        };
+        checkMenuItems();
+    }, []);
+
 
 
     useEffect(() => {
@@ -32,7 +48,6 @@ const HomeView = () => {
                 console.log(error);
             })
         }
-
         getMovies();
     }, [])
 
@@ -139,76 +154,80 @@ const HomeView = () => {
                         </a>
 
                         {/* Mobile Menu Button with better touch target */}
-                        <button 
-                            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                            className="md:hidden relative z-10 p-2 touch-manipulation"
-                            aria-label="Toggle menu"
-                        >
-                            <div className="w-6 h-6 relative flex flex-col justify-center gap-1.5">
-                                <span className={`h-0.5 w-full bg-white transform transition-transform ${mobileMenuOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
-                                <span className={`h-0.5 w-full bg-white transition-opacity ${mobileMenuOpen ? 'opacity-0' : ''}`}></span>
-                                <span className={`h-0.5 w-full bg-white transform transition-transform ${mobileMenuOpen ? '-rotate-45 -translate-y-2' : ''}`}></span>
-                            </div>
-                        </button>
+                        {hasMenuItems && (
+                            <button 
+                                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                                className="md:hidden relative z-10 p-2 touch-manipulation"
+                                aria-label="Toggle menu"
+                            >
+                                <div className="w-6 h-6 relative flex flex-col justify-center gap-1.5">
+                                    <span className={`h-0.5 w-full bg-white transform transition-transform ${mobileMenuOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
+                                    <span className={`h-0.5 w-full bg-white transition-opacity ${mobileMenuOpen ? 'opacity-0' : ''}`}></span>
+                                    <span className={`h-0.5 w-full bg-white transform transition-transform ${mobileMenuOpen ? '-rotate-45 -translate-y-2' : ''}`}></span>
+                                </div>
+                            </button>
+                        )}
 
                         {/* Desktop Navigation */}
-                        <nav className="hidden md:flex items-center space-x-6">
-                            <div className="group relative">
-                                <button 
-                                    onClick={() => navigate('/')}
-                                    className="px-4 py-2 text-gray-400 hover:text-white transition-colors flex items-center gap-2"
-                                >
-                                    Movies
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                    </svg>
-                                </button>
-                            </div>
-                            <div className="group relative">
-                                <button 
-                                    onClick={() => navigate('/menu')}
-                                    className="px-4 py-2 text-gray-400 hover:text-white transition-colors flex items-center gap-2"
-                                >
-                                    Menu
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </nav>
+                        {hasMenuItems && (
+                            <nav className="hidden md:flex items-center space-x-6">
+                                <div className="group relative">
+                                    <button 
+                                        onClick={() => navigate('/')}
+                                        className="px-4 py-2 text-gray-400 hover:text-white transition-colors flex items-center gap-2"
+                                    >
+                                        Movies
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div className="group relative">
+                                    <button 
+                                        onClick={() => navigate('/menu')}
+                                        className="px-4 py-2 text-gray-400 hover:text-white transition-colors flex items-center gap-2"
+                                    >
+                                        Menu
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </nav>
+                        )}
                     </div>
-
-
 
                     {/* Enhanced Mobile Menu */}
-                    <div className={`md:hidden fixed inset-0 bg-black/98 backdrop-blur-sm transition-all duration-300 ease-in-out ${
-                        mobileMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
-                    }`}>
-                        <div className={`flex flex-col items-center justify-center h-[100dvh] space-y-12 p-8 transform transition-all duration-300 ${
-                            mobileMenuOpen ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
+                    {hasMenuItems && (
+                        <div className={`md:hidden fixed inset-0 bg-black/98 backdrop-blur-sm transition-all duration-300 ease-in-out ${
+                            mobileMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
                         }`}>
-                            <div className="flex flex-col items-center space-y-8 w-full">
-                                <button 
-                                    className="w-full px-8 py-4 rounded-lg border border-white/20 bg-white/5 backdrop-blur-sm text-2xl text-white hover:bg-white/10 active:bg-white/20 transition-all duration-300 touch-manipulation"
-                                    onClick={() => {
-                                        setMobileMenuOpen(false);
-                                        navigate('/');
-                                    }}
-                                >
-                                    Movies
-                                </button>
-                                <button 
-                                    className="w-full px-8 py-4 rounded-lg border border-white/20 bg-white/5 backdrop-blur-sm text-2xl text-white hover:bg-white/10 active:bg-white/20 transition-all duration-300 touch-manipulation"
-                                    onClick={() => {
-                                        setMobileMenuOpen(false);
-                                        navigate('/menu');
-                                    }}
-                                >
-                                    Menu
-                                </button>
+                            <div className={`flex flex-col items-center justify-center h-[100dvh] space-y-12 p-8 transform transition-all duration-300 ${
+                                mobileMenuOpen ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
+                            }`}>
+                                <div className="flex flex-col items-center space-y-8 w-full">
+                                    <button 
+                                        className="w-full px-8 py-4 rounded-lg border border-white/20 bg-white/5 backdrop-blur-sm text-2xl text-white hover:bg-white/10 active:bg-white/20 transition-all duration-300 touch-manipulation"
+                                        onClick={() => {
+                                            setMobileMenuOpen(false);
+                                            navigate('/');
+                                        }}
+                                    >
+                                        Movies
+                                    </button>
+                                    <button 
+                                        className="w-full px-8 py-4 rounded-lg border border-white/20 bg-white/5 backdrop-blur-sm text-2xl text-white hover:bg-white/10 active:bg-white/20 transition-all duration-300 touch-manipulation"
+                                        onClick={() => {
+                                            setMobileMenuOpen(false);
+                                            navigate('/menu');
+                                        }}
+                                    >
+                                        Menu
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    )}
                 </div>
             </header>
 
