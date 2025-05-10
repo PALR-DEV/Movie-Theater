@@ -1,13 +1,14 @@
 <script>
     import { onMount } from "svelte";
     import { movies } from "$lib/JSON_DATA/movies.json";
-    import { goto } from "$app/navigation";
+    import { goto } from '$app/navigation';
 
     let mobileMenuOpen = false;
 
     const toggleMobileMenu = () => {
         mobileMenuOpen = !mobileMenuOpen;
     };
+
 
     onMount(() => {
         // Smooth scrolling for all anchor links
@@ -29,15 +30,9 @@
 
 <svelte:head>
     <title>LUMEN Theater | Modern Cinema Experience</title>
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-    />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta
-        name="apple-mobile-web-app-status-bar-style"
-        content="black-translucent"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link
         rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
@@ -50,11 +45,9 @@
 
 <!-- Mobile Menu -->
 <div
-    class="mobile-menu fixed inset-0 bg-black z-50 overflow-y-auto"
-    style="padding-top: env(safe-area-inset-top)"
+    class="mobile-menu fixed inset-0 bg-black z-50 p-6 overflow-y-auto"
     class:open={mobileMenuOpen}
 >
-
     <div class="flex justify-between items-center mb-12">
         <div class="flex items-center space-x-2">
             <i class="fas fa-film text-2xl text-white" />
@@ -78,10 +71,7 @@
 </div>
 
 <!-- Navigation -->
-<nav
-    class="fixed w-full z-40 bg-black text-white"
-    style="padding-top: env(safe-area-inset-top)"
->
+<nav class="fixed w-full z-40 bg-black text-white " >
     <div class="container mx-auto px-6 py-4 flex justify-between items-center">
         <div class="flex items-center space-x-2">
             <i class="fas fa-film text-2xl text-white" />
@@ -180,51 +170,48 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {#each movies as movie}
-                <div
-                    class="movie-card bg-white rounded-lg overflow-hidden relative"
-                    on:click={() => {
+                    <div class="movie-card bg-white rounded-lg overflow-hidden relative" on:click={() => {
                         goto(`/movie-details/${movie.id}`);
-                    }}
-                >
-                    <div class="relative">
-                        <img
-                            src={movie.posterUrl}
-                            alt={movie.title}
-                            class="w-full h-80 sm:h-96 object-cover"
-                        />
-                        <div
-                            class="rating-badge bg-white/80 text-black px-3 py-1 rounded-full text-sm font-bold"
-                        >
-                            <i class="fas fa-star text-yellow-500 mr-1" />
-                            {movie.imdbRating}
+                    }}>
+                        <div class="relative">
+                            <img
+                                src={movie.posterUrl}
+                                alt={movie.title}
+                                class="w-full h-80 sm:h-96 object-cover"
+                            />
+                            <div
+                                class="rating-badge bg-white/80 text-black px-3 py-1 rounded-full text-sm font-bold"
+                            >
+                                <i class="fas fa-star text-yellow-500 mr-1" />
+                                {movie.imdbRating}
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <h3 class="font-bold text-xl mb-2">
+                                {movie.title}
+                            </h3>
+                            <div
+                                class="flex items-center text-gray-600 text-sm mb-4"
+                            >
+                                <span>Sci-Fi</span>
+                                <span class="mx-2">•</span>
+                                <span>2h 46m</span>
+                                <span class="mx-2">•</span>
+                                <span>PG-13</span>
+                            </div>
+                            <p class="text-gray-700 mb-4 line-clamp-2">
+                                Paul Atreides unites with Chani and the Fremen
+                                while seeking revenge against the conspirators
+                                who destroyed his family.
+                            </p>
+                            
+                            <button
+                                class="w-full py-2 bg-black text-white rounded-md font-medium hover:bg-gray-800 transition"
+                            >
+                                Book Tickets
+                            </button>
                         </div>
                     </div>
-                    <div class="p-6">
-                        <h3 class="font-bold text-xl mb-2">
-                            {movie.title}
-                        </h3>
-                        <div
-                            class="flex items-center text-gray-600 text-sm mb-4"
-                        >
-                            <span>Sci-Fi</span>
-                            <span class="mx-2">•</span>
-                            <span>2h 46m</span>
-                            <span class="mx-2">•</span>
-                            <span>PG-13</span>
-                        </div>
-                        <p class="text-gray-700 mb-4 line-clamp-2">
-                            Paul Atreides unites with Chani and the Fremen while
-                            seeking revenge against the conspirators who
-                            destroyed his family.
-                        </p>
-
-                        <button
-                            class="w-full py-2 bg-black text-white rounded-md font-medium hover:bg-gray-800 transition"
-                        >
-                            Book Tickets
-                        </button>
-                    </div>
-                </div>
             {/each}
         </div>
     </div>
@@ -510,10 +497,8 @@
         color: #0a0a0a;
         margin: 0;
         padding: 0;
-        /* Add these lines for iOS safe area */
-        background-color: black;
-        padding-top: env(safe-area-inset-top);
     }
+
 
     .hero-gradient {
         background: linear-gradient(
