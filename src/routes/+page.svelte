@@ -28,6 +28,107 @@
     });
 </script>
 
+
+<style>
+    
+    :global(body) {
+        font-family: "Inter", sans-serif;
+        background-color: #fafafa;
+        color: #0a0a0a;
+        margin: 0;
+        padding: 0;
+    }
+
+
+    .hero-gradient {
+        background: linear-gradient(
+            to bottom,
+            rgba(0, 0, 0, 0.8) 0%,
+            rgba(0, 0, 0, 0) 100%
+        );
+    }
+
+    .movie-card {
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+            0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    .movie-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+            0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    .rating-badge {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        backdrop-filter: blur(4px);
+    }
+
+    .nav-link {
+        position: relative;
+    }
+
+    .nav-link::after {
+        content: "";
+        position: absolute;
+        width: 0;
+        height: 2px;
+        bottom: -2px;
+        left: 0;
+        background-color: white;
+        transition: width 0.3s ease;
+    }
+
+    .nav-link:hover::after {
+        width: 100%;
+    }
+
+    .showtime-pill {
+        transition: all 0.2s ease;
+    }
+
+    .showtime-pill:hover {
+        background-color: #000 !important;
+        color: #fff !important;
+    }
+
+    .font-display {
+        font-family: "Bebas Neue", sans-serif;
+    }
+
+    .mobile-menu {
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+    }
+
+    .mobile-menu.open {
+        transform: translateX(0);
+    }
+
+    .animate-bounce {
+        animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+        0%,
+        20%,
+        50%,
+        80%,
+        100% {
+            transform: translateY(0);
+        }
+        40% {
+            transform: translateY(-20px);
+        }
+        60% {
+            transform: translateY(-10px);
+        }
+    }
+</style>
+
 <svelte:head>
     <title>LUMEN Theater | Modern Cinema Experience</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -489,102 +590,3 @@
         </div>
     </div>
 </footer>
-
-<style>
-    :global(body) {
-        font-family: "Inter", sans-serif;
-        background-color: #fafafa;
-        color: #0a0a0a;
-        margin: 0;
-        padding: 0;
-    }
-
-
-    .hero-gradient {
-        background: linear-gradient(
-            to bottom,
-            rgba(0, 0, 0, 0.8) 0%,
-            rgba(0, 0, 0, 0) 100%
-        );
-    }
-
-    .movie-card {
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-            0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    }
-
-    .movie-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
-            0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    }
-
-    .rating-badge {
-        position: absolute;
-        top: 12px;
-        right: 12px;
-        backdrop-filter: blur(4px);
-    }
-
-    .nav-link {
-        position: relative;
-    }
-
-    .nav-link::after {
-        content: "";
-        position: absolute;
-        width: 0;
-        height: 2px;
-        bottom: -2px;
-        left: 0;
-        background-color: white;
-        transition: width 0.3s ease;
-    }
-
-    .nav-link:hover::after {
-        width: 100%;
-    }
-
-    .showtime-pill {
-        transition: all 0.2s ease;
-    }
-
-    .showtime-pill:hover {
-        background-color: #000 !important;
-        color: #fff !important;
-    }
-
-    .font-display {
-        font-family: "Bebas Neue", sans-serif;
-    }
-
-    .mobile-menu {
-        transform: translateX(100%);
-        transition: transform 0.3s ease;
-    }
-
-    .mobile-menu.open {
-        transform: translateX(0);
-    }
-
-    .animate-bounce {
-        animation: bounce 2s infinite;
-    }
-
-    @keyframes bounce {
-        0%,
-        20%,
-        50%,
-        80%,
-        100% {
-            transform: translateY(0);
-        }
-        40% {
-            transform: translateY(-20px);
-        }
-        60% {
-            transform: translateY(-10px);
-        }
-    }
-</style>

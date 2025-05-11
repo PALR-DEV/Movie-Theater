@@ -3,51 +3,35 @@
         {
             "id": "tt15239678",
             "title": "Dune: Part Two",
+            "youtubeId": "Way9Dexny3w",
             "genre": "Sci-Fi",
             "duration": "2h 46m",
             "rating": "PG-13",
             "imdbRating": 8.5,
             "description": "Paul Atreides unites with Chani and the Fremen while seeking revenge against the conspirators who destroyed his family.",
-            "posterUrl": "https://m.media-amazon.com/images/M/MV5BNTc0YmQxMjEtODI5MC00NjFiLTlkMWUtOGQ5NjFmYWUyZGJhXkEyXkFqcGc@._V1_.jpg",
-            "showtimes": [
-                "12:00 PM",
-                "3:30 PM",
-                "7:00 PM",
-                "10:30 PM"
-            ]
+            "posterUrl": "https://m.media-amazon.com/images/M/MV5BNTc0YmQxMjEtODI5MC00NjFiLTlkMWUtOGQ5NjFmYWUyZGJhXkEyXkFqcGc@._V1_.jpg"
         },
-        
         {
             "id": "tt14513804",
             "title": "Thunderbolts",
+            "youtubeId": "bqnRzjPfb5A",
             "genre": "Action",
             "duration": "2h 5m",
             "rating": "PG-13",
             "imdbRating": 7.5,
             "description": "A group of antiheroes, including Red Guardian, Ghost, US Agent and others, go on missions for the government.",
-            "posterUrl": "https://cdn.marvel.com/content/1x/thunderboltsposter.jpeg",
-            "showtimes": [
-                "11:30 AM",
-                "2:45 PM",
-                "6:15 PM",
-                "9:45 PM"
-            ]
+            "posterUrl": "https://cdn.marvel.com/content/1x/thunderboltsposter.jpeg"
         },
         {
             "id": "tt0121766",
             "title": "Star Wars: Episode III - Revenge of the Sith",
+            "youtubeId": "GTG_TtV2JXQ",
             "genre": "Sci-Fi",
             "duration": "2h 20m",
             "rating": "PG-13",
             "imdbRating": 7.6,
             "description": "Three years into the Clone Wars, Obi-Wan pursues a new threat, while Anakin is lured by Chancellor Palpatine into a sinister plot to rule the galaxy.",
-            "posterUrl": "https://m.media-amazon.com/images/M/MV5BNTc4MTc3NTQ5OF5BMl5BanBnXkFtZTcwOTg0NjI4NA@@._V1_.jpg",
-            "showtimes": [
-                "1:00 PM",
-                "4:30 PM",
-                "8:00 PM",
-                "11:30 PM"
-            ]
+            "posterUrl": "https://m.media-amazon.com/images/M/MV5BNTc4MTc3NTQ5OF5BMl5BanBnXkFtZTcwOTg0NjI4NA@@._V1_.jpg"
         }
     ]
 }

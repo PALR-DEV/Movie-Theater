@@ -1,0 +1,124 @@
+{
+    "showtimes": [
+        {
+            "day": "Thu",
+            "date": "14",
+            "month": "Mar",
+            "slots": [
+                {
+                    "time": "11:30 AM",
+                    "available": true
+                },
+                {
+                    "time": "2:00 PM",
+                    "available": true
+                },
+                {
+                    "time": "4:30 PM",
+                    "available": true
+                },
+                {
+                    "time": "7:00 PM",
+                    "available": true
+                },
+                {
+                    "time": "9:30 PM",
+                    "available": false
+                }
+            ]
+        },
+        {
+            "day": "Fri",
+            "date": "15",
+            "month": "Mar",
+            "slots": [
+                {
+                    "time": "10:30 AM",
+                    "available": true
+                },
+                {
+                    "time": "1:00 PM",
+                    "available": true
+                },
+                {
+                    "time": "3:30 PM",
+                    "available": true
+                },
+                {
+                    "time": "6:00 PM",
+                    "available": false
+                },
+                {
+                    "time": "8:30 PM",
+                    "available": true
+                },
+                {
+                    "time": "11:00 PM",
+                    "available": true
+                }
+            ]
+        },
+        {
+            "day": "Sat",
+            "date": "16",
+            "month": "Mar",
+            "slots": [
+                {
+                    "time": "9:30 AM",
+                    "available": true
+                },
+                {
+                    "time": "12:00 PM",
+                    "available": true
+                },
+                {
+                    "time": "2:30 PM",
+                    "available": true
+                },
+                {
+                    "time": "5:00 PM",
+                    "available": true
+                },
+                {
+                    "time": "7:30 PM",
+                    "available": true
+                },
+                {
+                    "time": "10:00 PM",
+                    "available": true
+                },
+                {
+                    "time": "12:30 AM",
+                    "available": false
+                }
+            ]
+        },
+        {
+            "day": "Sun",
+            "date": "17",
+            "month": "Mar",
+            "slots": [
+                {
+                    "time": "10:00 AM",
+                    "available": true
+                },
+                {
+                    "time": "12:30 PM",
+                    "available": true
+                },
+                {
+                    "time": "3:00 PM",
+                    "available": true
+                },
+                {
+                    "time": "5:30 PM",
+                    "available": true
+                },
+                {
+                    "time": "8:00 PM",
+                    "available": true
+                }
+            ]
+        }
+    ]
+}
