@@ -4,7 +4,7 @@
     import { onMount } from "svelte";
     import { movies } from "$lib/JSON_DATA/movies.json";
     import { showtimes } from "$lib/JSON_DATA/showtimes.json";
-    $: movieId = $page.params.id;
+    $: movieId = $page.url.searchParams.get('movieId');
     let showTrailer = false;
     let trailerUrl = null;
     let movieDetails = null;
@@ -31,7 +31,7 @@
     function selectTimeSlot(slot) {
         if (slot.available) {
             selectedTime = slot;
-            goto(`/select-tickets?movieId=${movieId}&date=${selectedDate.date}&time=${slot.time}`);
+            goto(`/ticket-selection?movieId=${movieId}&date=${selectedDate.date}&month=${selectedDate.month}&time=${slot.time}`);
         }
     }
 

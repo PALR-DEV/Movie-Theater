@@ -272,7 +272,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {#each movies as movie}
                     <div class="movie-card bg-white rounded-lg overflow-hidden relative" on:click={() => {
-                        goto(`/movie-details/${movie.id}`);
+                        goto(`/movie-details?movieId=${movie.id}`);
                     }}>
                         <div class="relative">
                             <img
