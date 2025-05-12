@@ -153,16 +153,14 @@
                     <!-- Content Sections -->
                     <div class="space-y-8 md:space-y-12">
                         <!-- Synopsis -->
-                        <section
-                            class="bg-white rounded-xl p-6 md:p-8 shadow-sm"
-                        >
+                        <!-- <section class="bg-white rounded-xl p-6 md:p-8 shadow-sm" >
                             <h2 class="text-xl md:text-2xl font-semibold mb-4">
                                 Overview
                             </h2>
                             <p class="text-gray-700 leading-relaxed md:text-lg">
                                 {movieDetails.description}
                             </p>
-                        </section>
+                        </section> -->
 
                         <!-- Showtimes -->
                         <section

@@ -46,7 +46,21 @@
 
     const handleCheckout = () => {
         if (totalPrice > 0) {
-            goto('/checkout'); // Adjust the route as needed
+            const params = new URLSearchParams({
+                movieId,
+                date,
+                month,
+                time,
+                total:totalPrice.toString()
+            })
+
+            Object.entries(tickets).forEach(([type, count]) => {
+                if (count > 0) {
+                    params.append(type, count.toString());
+                }
+            });
+
+            goto(`/checkout?${params.toString()}`);
         }
     };
 
