@@ -63,19 +63,19 @@ const PaymentForm = () => {
             }
         };
 
-        setTimeout(() => {
-            const mockPaymentId = 'mock_' + Math.random().toString(36).substr(2, 9);
+        // setTimeout(() => {
+        //     const mockPaymentId = 'mock_' + Math.random().toString(36).substr(2, 9);
             
-            navigate('/purchase-complete', {
-                state: {
-                    tickets,
-                    total,
-                    movieDetails,
-                    paymentId: mockPaymentId,
-                    ticketId: 'TIX-' + Math.random().toString(36).substr(2, 9)
-                }
-            });
-        }, 2000); // Simulate 2 second processing time
+        //     navigate('/purchase-complete', {
+        //         state: {
+        //             tickets,
+        //             total,
+        //             movieDetails,
+        //             paymentId: mockPaymentId,
+        //             ticketId: 'TIX-' + Math.random().toString(36).substr(2, 9)
+        //         }
+        //     });
+        // }, 2000); 
 
         if (total > 0) {
             fetchClientSecret();
@@ -128,7 +128,7 @@ const PaymentForm = () => {
                 status: 'completed',
 
             }
-            await movieService.storeTransaction(transaction);
+            // await movieService.storeTransaction(transaction);
 
         } catch (error) {
             console.error('Error saving transaction:', error);
@@ -158,7 +158,7 @@ const PaymentForm = () => {
                 tickets: tickets,
                 status: 'active',
             };
-            await emailService.sendEmail(ticket);
+            // await emailService.sendEmail(ticket);
             
         } catch (error) {
             console.error('Error sending receipt email:', error);
@@ -386,7 +386,7 @@ const CheckOutView = () => {
                                     </div>
                                     <div className="flex justify-between items-center text-zinc-400">
                                         <p>Service Fee</p>
-                                        <p>$1.00</p>
+                                        <p>$1.50</p>
                                     </div>
                                     <div className="flex justify-between items-center pt-4 border-t border-white/10">
                                         <p className="text-lg font-semibold">Total</p>
