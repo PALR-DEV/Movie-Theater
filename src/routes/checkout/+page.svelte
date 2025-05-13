@@ -120,57 +120,35 @@
                 <div class="space-y-6">
                     <div>
                         <label class="block text-sm font-medium mb-2">Cardholder Name</label>
-                        <div class="relative">
-                            <input 
-                                type="text" 
-                                bind:value={cardholderName} 
-                                class="w-full px-4 py-3 lg:py-4 text-base rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-gray-300 transition"
-                                placeholder="John Doe"
-                            />
-                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-                                <i class="fas fa-user"></i>
-                            </span>
-                        </div>
+                        <input 
+                            type="text" 
+                            bind:value={cardholderName} 
+                            class="w-full px-4 py-3 text-base rounded-md border border-gray-200 bg-gray-50 focus:outline-none focus:border-gray-400 transition placeholder-gray-400"
+                            placeholder="Cardholder Name"
+                        />
                     </div>
-                    
                     <div>
                         <label class="block text-sm font-medium mb-2">Card Number</label>
-                        <div class="relative">
-                            <div id="card-number-element" class="stripe-input"></div>
-                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-                                <i class="far fa-credit-card"></i>
-                            </span>
-                        </div>
+                        <div id="card-number-element" class="stripe-flat-input"></div>
                     </div>
-                    
                     <div class="flex gap-4">
                         <div class="w-1/2">
                             <label class="block text-sm font-medium mb-2">Expiry Date</label>
-                            <div class="relative">
-                                <div id="card-expiry-element" class="stripe-input"></div>
-                            </div>
+                            <div id="card-expiry-element" class="stripe-flat-input"></div>
                         </div>
                         <div class="w-1/2">
                             <label class="block text-sm font-medium mb-2">CVV</label>
-                            <div class="relative">
-                                <div id="card-cvc-element" class="stripe-input"></div>
-                            </div>
+                            <div id="card-cvc-element" class="stripe-flat-input"></div>
                         </div>
                     </div>
-                    
                     <div>
                         <label class="block text-sm font-medium mb-2">Email for Receipt</label>
-                        <div class="relative">
-                            <input 
-                                type="email" 
-                                bind:value={email} 
-                                class="w-full px-4 py-3 text-base rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-gray-300 transition"
-                                placeholder="your@email.com"
-                            />
-                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-                                <i class="fas fa-envelope"></i>
-                            </span>
-                        </div>
+                        <input 
+                            type="email" 
+                            bind:value={email} 
+                            class="w-full px-4 py-3 text-base rounded-md border border-gray-200 bg-gray-50 focus:outline-none focus:border-gray-400 transition placeholder-gray-400"
+                            placeholder="your@email.com"
+                        />
                     </div>
                 </div>
                 
@@ -334,6 +312,41 @@
     }
     :global(.StripeElement--focus) {
         box-shadow: none;
+    }
+    :global(.StripeElement--invalid) {
+        color: #dc2626;
+    }
+
+    .stripe-flat-input {
+        width: 100%;
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.375rem;
+        padding: 0 14px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        font-size: 1rem;
+        transition: border 0.2s;
+    }
+    .stripe-flat-input:focus-within {
+        border-color: #a3a3a3;
+    }
+    :global(.StripeElement) {
+        background: transparent;
+        width: 100%;
+        height: 48px;
+        padding: 0;
+        border: none;
+        font-size: 1rem;
+        color: #22223b;
+        border-radius: 0.375rem;
+        display: flex;
+        align-items: center;
+    }
+    :global(.StripeElement--focus) {
+        border: none;
+        outline: none;
     }
     :global(.StripeElement--invalid) {
         color: #dc2626;
