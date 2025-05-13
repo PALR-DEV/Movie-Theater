@@ -13,11 +13,10 @@ const HomeView = () => {
     const touchEndX = useRef(null);
     const startX = useRef(null);
     const currentX = useRef(null);
-    // New refs for vertical movement
     const startY = useRef(null);
     const currentY = useRef(null);
     const [isDragging, setIsDragging] = useState(false);
-    const [movies, setMovies] = useState([])
+    const [movies, setMovies] = useState([]);
     const [hasMenuItems, setHasMenuItems] = useState(false);
 
     useEffect(() => {
@@ -33,308 +32,167 @@ const HomeView = () => {
         checkMenuItems();
     }, []);
 
-
-
     useEffect(() => {
-        const getMovies = async() => {
-            await movieService.getMovies().then((data) => {
-                const formatMovies = data.map((movie) => ({
-                    ...movie,
-                    categories:JSON.parse(movie.categories)
-                }));
-                console.log(formatMovies)
-                setMovies(formatMovies);
-            }).catch((error) => {
-                console.log(error);
-            })
-        }
+        const getMovies = async () => {
+            await movieService.getMovies()
+                .then((data) => {
+                    const formatMovies = data.map((movie) => ({
+                        ...movie,
+                        categories: JSON.parse(movie.categories),
+                    }));
+                    console.log(formatMovies);
+                    setMovies(formatMovies);
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+        };
         getMovies();
-    }, [])
-
-    const nowShowing = [
-        {
-            title: "The Dark Knight",
-            tagline: "Why So Serious?",
-            duration: "2h 32min",
-            rating: "PG-13",
-            genre: "Action, Drama, Crime",
-            image: "https://images.unsplash.com/photo-1509347528160-9a9e33742cdb?q=80&w=2070&auto=format&fit=crop"
-        },
-        {
-            title: "Inception",
-            tagline: "Your mind is the scene of the crime",
-            duration: "2h 28min",
-            rating: "PG-13",
-            genre: "Sci-Fi, Action",
-            image: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2025&auto=format&fit=crop"
-        },
-        {
-            title: "Interstellar",
-            tagline: "Mankind was born on Earth. It was never meant to die here.",
-            duration: "2h 49min",
-            rating: "PG-13",
-            genre: "Sci-Fi, Adventure",
-            image: "https://images.unsplash.com/photo-1506355683710-bd071c0a5828?q=80&w=2070&auto=format&fit=crop"
-        }
-    ];
-
-    const handleStart = (e) => {
-        const touch = e.touches[0];
-        startX.current = touch.clientX;
-        currentX.current = touch.clientX;
-        startY.current = touch.clientY;
-        currentY.current = touch.clientY;
-        setIsDragging(true);
-    };
-
-    const handleMove = (e) => {
-        if (!startX.current) return;
-        const touch = e.touches[0];
-        currentX.current = touch.clientX;
-        currentY.current = touch.clientY;
-        // No default prevention so that vertical scroll is allowed
-    };
-
-    const handleEnd = () => {
-        if (!startX.current || !currentX.current) return;
-        // Check if vertical movement is significant (e.g. more than 30px)
-        const verticalDiff = Math.abs(currentY.current - startY.current);
-        if (verticalDiff > 30) {
-            // Do nothing if user scrolls vertically
-            startX.current = null;
-            currentX.current = null;
-            startY.current = null;
-            currentY.current = null;
-            setIsDragging(false);
-            return;
-        }
-
-        const swipeDistance = currentX.current - startX.current;
-        const minSwipeDistance = 50;
-
-        if (Math.abs(swipeDistance) > minSwipeDistance) {
-            if (swipeDistance > 0) {
-                // Swipe right
-                setCurrentSlide((prev) => (prev === 0 ? movies.length - 1 : prev - 1));
-            } else {
-                // Swipe left
-                setCurrentSlide((prev) => (prev + 1) % movies.length);
-            }
-        }
-        startX.current = null;
-        currentX.current = null;
-        startY.current = null;
-        currentY.current = null;
-        setIsDragging(false);
-    };
-
-    useEffect(() => {
-        // Only set up the interval if there are multiple movies
-        if (movies.length > 1) {
-            const interval = setInterval(() => {
-                setCurrentSlide((prev) => (prev + 1) % movies.length);
-            }, 6000);
-            return () => clearInterval(interval);
-        }
-    }, [movies.length]);
+    }, []);
 
     return (
         <div className="bg-black min-h-[100dvh] overflow-x-hidden">
-            {/* Header */}
-            <header className="fixed w-full z-50 bg-gradient-to-b from-black via-black/90 to-transparent">
-                <div className="container mx-auto px-6 sm:px-8 md:px-12 py-3">
-                    <div className="flex justify-between items-center">
-                        <a href="#" className="relative z-10">
-                            <div className="text-xl font-bold tracking-tight text-white">
-                                CINEMA
-                            </div>
-                            <div className="text-[10px] uppercase tracking-wider text-gray-400">
-                                Experience Movies
-                            </div>
-                        </a>
-
-                        {/* Mobile Menu Button with better touch target */}
-                        {hasMenuItems && (
-                            <button 
-                                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                                className="md:hidden relative z-10 p-2 touch-manipulation"
-                                aria-label="Toggle menu"
-                            >
-                                <div className="w-6 h-6 relative flex flex-col justify-center gap-1.5">
-                                    <span className={`h-0.5 w-full bg-white transform transition-transform ${mobileMenuOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
-                                    <span className={`h-0.5 w-full bg-white transition-opacity ${mobileMenuOpen ? 'opacity-0' : ''}`}></span>
-                                    <span className={`h-0.5 w-full bg-white transform transition-transform ${mobileMenuOpen ? '-rotate-45 -translate-y-2' : ''}`}></span>
-                                </div>
-                            </button>
-                        )}
-
-                        {/* Desktop Navigation */}
-                        {hasMenuItems && (
-                            <nav className="hidden md:flex items-center space-x-6">
-                                <div className="group relative">
-                                    <button 
-                                        onClick={() => navigate('/')}
-                                        className="px-4 py-2 text-gray-400 hover:text-white transition-colors flex items-center gap-2"
-                                    >
-                                        Movies
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                        </svg>
-                                    </button>
-                                </div>
-                                <div className="group relative">
-                                    <button 
-                                        onClick={() => navigate('/menu')}
-                                        className="px-4 py-2 text-gray-400 hover:text-white transition-colors flex items-center gap-2"
-                                    >
-                                        Menu
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            </nav>
-                        )}
+            {/* Navigation */}
+            <nav className="fixed w-full z-40 bg-black text-white shadow-lg">
+                <div className="container mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
+                    <div className="flex items-center space-x-2">
+                        <i className="fas fa-film text-2xl text-white" />
+                        <span className="font-display text-2xl tracking-wider ml-2">LUMEN</span>
                     </div>
-
-                    {/* Enhanced Mobile Menu */}
-                    {hasMenuItems && (
-                        <div className={`md:hidden fixed inset-0 bg-black/98 backdrop-blur-sm transition-all duration-300 ease-in-out ${
-                            mobileMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
-                        }`}>
-                            <div className={`flex flex-col items-center justify-center h-[100dvh] space-y-12 p-8 transform transition-all duration-300 ${
-                                mobileMenuOpen ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
-                            }`}>
-                                <div className="flex flex-col items-center space-y-8 w-full">
-                                    <button 
-                                        className="w-full px-8 py-4 rounded-lg border border-white/20 bg-white/5 backdrop-blur-sm text-2xl text-white hover:bg-white/10 active:bg-white/20 transition-all duration-300 touch-manipulation"
-                                        onClick={() => {
-                                            setMobileMenuOpen(false);
-                                            navigate('/');
-                                        }}
-                                    >
-                                        Movies
-                                    </button>
-                                    <button 
-                                        className="w-full px-8 py-4 rounded-lg border border-white/20 bg-white/5 backdrop-blur-sm text-2xl text-white hover:bg-white/10 active:bg-white/20 transition-all duration-300 touch-manipulation"
-                                        onClick={() => {
-                                            setMobileMenuOpen(false);
-                                            navigate('/menu');
-                                        }}
-                                    >
-                                        Menu
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+                    {/* Desktop Nav */}
+                    <div className="hidden md:flex space-x-8">
+                        <a href="#" className="nav-link text-white relative font-medium transition after:absolute after:left-0 after:-bottom-1 after:w-0 after:h-0.5 after:bg-white after:transition-all after:duration-300 hover:after:w-full">Home</a>
+                        <a href="#now-showing" className="nav-link text-white relative font-medium transition after:absolute after:left-0 after:-bottom-1 after:w-0 after:h-0.5 after:bg-white after:transition-all after:duration-300 hover:after:w-full">Movies</a>
+                        <a href="#" className="nav-link text-white relative font-medium transition after:absolute after:left-0 after:-bottom-1 after:w-0 after:h-0.5 after:bg-white after:transition-all after:duration-300 hover:after:w-full">Food & Drinks</a>
+                        <a href="#" className="nav-link text-white relative font-medium transition after:absolute after:left-0 after:-bottom-1 after:w-0 after:h-0.5 after:bg-white after:transition-all after:duration-300 hover:after:w-full">Membership</a>
+                    </div>
+                    {/* Mobile Nav Toggle - always visible on mobile */}
+                    <div className="flex items-center space-x-4 md:hidden">
+                        <button
+                            className="p-2.5 rounded-lg hover:bg-white/10 active:bg-white/20 transition-all duration-200 border border-white/20"
+                            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                            aria-label="Toggle menu"
+                        >
+                            <svg 
+                                className="w-6 h-6 text-white"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M4 6h16M4 12h16M4 18h16"
+                                />
+                            </svg>
+                        </button>
+                    </div>
+                    {/* Book Now button for desktop only */}
+                    <div className="hidden md:flex items-center">
+                        <button
+                            className="px-4 py-2 bg-white text-black rounded-md font-medium hover:bg-gray-200 transition"
+                            onClick={() => {
+                                const el = document.getElementById('now-showing');
+                                if (el) el.scrollIntoView({ behavior: 'smooth' });
+                            }}
+                        >
+                            Book Now
+                        </button>
+                    </div>
                 </div>
-            </header>
-
-            {/* Movie Header Section - Conditional Rendering Based on Number of Movies */}
-            <div className="relative h-[100dvh] overflow-hidden">
-                {movies.length === 0 ? (
-                    // Loading state with spinner
-                    <div className="flex items-center justify-center h-full bg-zinc-900">
-                        <LoadingSpinner />                        
-                    </div>
-                ) : movies.length === 1 ? (
-                    // Single movie - show static display without slider functionality
-                    <div className="relative h-full overflow-hidden">
-                        <div className="absolute inset-0">
-                            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent z-10"></div>
-                            <img
-                                src={movies[0].poster_url}
-                                alt={movies[0].title}
-                                className="w-full h-full object-cover"
-                            />
-                        </div>
-                        <div className="absolute bottom-0 left-0 right-0 z-20 p-4 sm:p-8 md:p-16">
-                            <div className="container mx-auto">
-                                <h1 className="text-3xl sm:text-4xl md:text-7xl font-bold text-white mb-2 md:mb-4">{movies[0].title}</h1>
-                                <p className="text-lg sm:text-xl md:text-2xl text-gray-300 mb-4 md:mb-6 line-clamp-2">{movies[0].tagline}</p>
-                                <div className="flex flex-wrap items-center gap-3 text-sm text-gray-300 mb-6">
-                                    <span>{movies[0].duration}</span>
-                                    {movies[0].categories.map((category, idx) => (
-                                        <span key={idx} className="text-xs px-1.5 py-0.5 bg-white/10 backdrop-blur-sm rounded-sm text-white/90">
-                                            {category}
-                                        </span>
-                                    ))}
-                                </div>
-                                <button 
-                                    onClick={() => navigate(`/movie/${movies[0].id}`)}
-                                    className="w-full sm:w-auto bg-white text-black px-8 py-4 rounded-lg hover:bg-gray-200 transition-colors text-lg font-medium"
-                                >
-                                    Get Tickets
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                ) : (
-                    // Multiple movies - show slider with controls
-                    <div 
-                        className={`relative h-full overflow-hidden ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
-                        onTouchStart={handleStart}
-                        onTouchMove={handleMove}
-                        onTouchEnd={handleEnd}
-                        style={{ minHeight: '100vh' }}
-                    >
-                        {movies.map((movie, index) => (
-                            <div
-                                key={index}
-                                className={`absolute inset-0 transition-opacity duration-1000 ${currentSlide === index ? 'opacity-100' : 'opacity-0'}`}
+                {/* Mobile Sidebar Panel */}
+                <div className={`fixed top-0 right-0 h-full w-64 bg-black z-50 shadow-lg transform transition-transform duration-300 md:hidden ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+                    <div className="flex flex-col h-full p-8 space-y-8">
+                        <div className="flex justify-end">
+                            <button
+                                className="p-2.5 rounded-lg hover:bg-white/10 active:bg-white/20 transition-all duration-200 border border-white/20"
+                                onClick={() => setMobileMenuOpen(false)}
+                                aria-label="Close menu"
                             >
-                                {/* Movie Background */}
-                                <div className="absolute inset-0">
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent z-10"></div>
-                                    <img
-                                        src={movie.poster_url}
-                                        alt={movie.title}
-                                        className="w-full h-full object-cover"
+                                <svg
+                                    className="w-6 h-6 text-white"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M6 18L18 6M6 6l12 12"
                                     />
-                                </div>
-
-                                {/* Enhanced Mobile Movie Info */}
-                                <div className="absolute bottom-0 left-0 right-0 z-20 p-4 sm:p-8 md:p-16">
-                                    <div className="container mx-auto">
-                                        <h1 className="text-3xl sm:text-4xl md:text-7xl font-bold text-white mb-2 md:mb-4">{movie.title}</h1>
-                                        <p className="text-lg sm:text-xl md:text-2xl text-gray-300 mb-4 md:mb-6 line-clamp-2">{movie.tagline}</p>
-                                        <div className="flex flex-wrap items-center gap-3 text-sm text-gray-300 mb-6">
-                                            <span>{movie.duration}</span>
-                                            {movie.categories.map((category, idx) => (
-                                                <span key={idx} className="text-xs px-1.5 py-0.5 bg-white/10 backdrop-blur-sm rounded-sm text-white/90">
-                                                    {category}
-                                                </span>
-                                            ))}
-                                        </div>
-                                        <button 
-                                            onClick={() => navigate(`/movie/${movie.id}`)}
-                                            className="w-full sm:w-auto bg-white text-black px-8 py-4 rounded-lg hover:bg-gray-200 transition-colors text-lg font-medium"
-                                        >
-                                            Get Tickets
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                        
-                        {/* Slider Controls - only show for multiple movies */}
-                        <div className="absolute bottom-32 right-8 md:right-16 z-30 flex flex-col items-end space-y-4">
-                            <div className="flex space-x-2">
-                                {movies.map((_, index) => (
-                                    <button
-                                        key={index}
-                                        onClick={() => setCurrentSlide(index)}
-                                        className={`w-16 h-1 rounded-full transition-all duration-300 ${
-                                            currentSlide === index ? 'bg-white' : 'bg-gray-600'
-                                        }`}
-                                    />
-                                ))}
-                            </div>
+                                </svg>
+                            </button>
                         </div>
+                        <a href="#" className="text-2xl font-semibold text-white" onClick={() => setMobileMenuOpen(false)}>Home</a>
+                        <a href="#now-showing" className="text-2xl font-semibold text-white" onClick={() => setMobileMenuOpen(false)}>Movies</a>
+                        <a href="#" className="text-2xl font-semibold text-white" onClick={() => setMobileMenuOpen(false)}>Food & Drinks</a>
+                        <a href="#" className="text-2xl font-semibold text-white" onClick={() => setMobileMenuOpen(false)}>Membership</a>
+                        <button
+                            className="px-6 py-3 bg-white text-black rounded-md font-medium hover:bg-gray-200 transition mt-auto"
+                            onClick={() => {
+                                setMobileMenuOpen(false);
+                                const el = document.getElementById('now-showing');
+                                if (el) el.scrollIntoView({ behavior: 'smooth' });
+                            }}
+                        >
+                            Book Now
+                        </button>
                     </div>
+                </div>
+                {/* Overlay for sidebar */}
+                {mobileMenuOpen && (
+                    <div
+                        className="fixed inset-0 bg-black/60 z-40 md:hidden"
+                        onClick={() => setMobileMenuOpen(false)}
+                    />
                 )}
-            </div>
+            </nav>
+
+            {/* Hero Section */}
+            <section className="relative h-full min-h-[100dvh] w-full flex items-center justify-center">
+                <img
+                    src="https://images.pexels.com/photos/436413/pexels-photo-436413.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+                    alt="Cinema Hero"
+                    className="absolute inset-0 w-full h-full object-cover object-center z-0 opacity-80"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent z-10" />
+                <div className="relative z-20 flex flex-col items-center justify-center w-full">
+                    <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 drop-shadow-lg text-center">
+                        Welcome to CINEMA
+                    </h1>
+                    <p className="text-lg md:text-2xl text-gray-200 mb-8 text-center max-w-2xl drop-shadow">
+                        Immerse yourself in the magic of storytelling with our state-of-the-art projection and sound systems.
+                    </p>
+                    <button
+                        onClick={() => {
+                            const el = document.getElementById('now-showing');
+                            if (el) el.scrollIntoView({ behavior: 'smooth' });
+                        }}
+                        className="px-8 py-4 bg-white text-black rounded-lg text-lg font-semibold shadow-lg hover:bg-gray-200 transition"
+                    >
+                        Showtimes
+                    </button>
+                </div>
+                {/* Animated Chevron Down */}
+                <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center">
+                    <button
+                        aria-label="Scroll down"
+                        onClick={() => {
+                            const el = document.getElementById('now-showing');
+                            if (el) el.scrollIntoView({ behavior: 'smooth' });
+                        }}
+                        className="focus:outline-none"
+                    >
+                        <svg className="w-10 h-10 text-white animate-bounce" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                </div>
+            </section>
 
             {/* Enhanced Movie Grid for Mobile */}
             <section className="relative pt-6 px-2 sm:px-4 md:px-8" id="now-showing">
@@ -346,12 +204,9 @@ const HomeView = () => {
                     </div>
 
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2 sm:gap-4">
+                        
                         {movies.map((movie, index) => (
-                            <div 
-                                key={index} 
-                                onClick={() => navigate(`/movie/${movie.id}`)}
-                                className="bg-zinc-900 rounded-lg overflow-hidden group active:scale-95 transition-all duration-300 touch-manipulation hover:ring-2 hover:ring-white cursor-pointer"
-                            >
+                            <div key={index} onClick={() => navigate(`/movie/${movie.id}`)} className="bg-zinc-900 rounded-lg overflow-hidden group active:scale-95 transition-all duration-300 touch-manipulation hover:ring-2 hover:ring-white cursor-pointer">
                                 <div className="relative aspect-[2/3]">
                                     <img
                                         src={movie.poster_url}
@@ -364,9 +219,6 @@ const HomeView = () => {
                                             <span className="bg-white/10 backdrop-blur-sm text-white px-2 py-0.5 rounded text-xs font-medium">
                                                 {movie.duration}
                                             </span>
-                                            {/* <span className="bg-white/90 text-black px-2 py-0.5 rounded text-xs font-medium">
-                                                {movie.rating}
-                                            </span> */}
                                         </div>
                                         <div className="absolute bottom-0 left-0 right-0 p-3">
                                             <h3 className="text-white font-bold line-clamp-1 mb-1">{movie.title}</h3>
@@ -381,6 +233,8 @@ const HomeView = () => {
                                     </div>
                                 </div>
                             </div>
+
+                            
                         ))}
                     </div>
                 </div>

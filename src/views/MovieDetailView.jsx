@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import movieService from '../Services/MovieServices';
 import LoadingSpinner from '../components/LoadingSpinner';
+import '../styles/scrollbar.css';
 
 const MovieDetailView = () => {
   const navigate = useNavigate();
@@ -13,6 +14,8 @@ const MovieDetailView = () => {
   const [screenings, setScreenings] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
+  const [dates, setDates] = useState([]);
+  const [selectedDate, setSelectedDate] = useState(null);
 
   // Update current time every minute
   useEffect(() => {
@@ -103,6 +106,9 @@ const MovieDetailView = () => {
               return {
                 dateObj: date,
                 formattedDate,
+                dayName,
+                monthName,
+                dayDate,
                 times: slot.times.sort((a, b) => {
                   // Sort times (e.g., "7:30 PM")
                   const [hourA, minutePeriodA] = a.split(':');
@@ -143,6 +149,22 @@ const MovieDetailView = () => {
         };
         setScreenings(formattedMovie.screenings);
         setMovie(formattedMovie);
+        
+        // Set available dates from the first screening's time slots
+        if (formattedMovie.screenings[0]) {
+          const availableDates = Object.keys(formattedMovie.screenings[0].timeSlotsByDay).map(date => {
+            const [dayName, monthAndDate] = date.split(', ');
+            const [monthName, dayDate] = monthAndDate.split(' ');
+            return {
+              fullDate: date,
+              day: dayName,
+              date: parseInt(dayDate),
+              month: monthName
+            };
+          });
+          setDates(availableDates);
+          setSelectedDate(availableDates[0]);
+        }
       } catch (error) {
         console.error("error fetching movies");
       } finally {
@@ -228,45 +250,69 @@ const MovieDetailView = () => {
                 </div>
               </div>
 
-
-
               {/* Showtimes Section */}
-              <div className="space-y-6">
-                <h2 className="text-2xl font-semibold text-white">Horarios</h2>
+              <div className="space-y-8">
+                {/* Date Selection */}
+                <div>
+                  <h2 className="text-2xl font-semibold text-white mb-6">Select Date</h2>
+                  <div className="flex space-x-4 overflow-x-auto pb-6 scrollbar-hide">
+                    {dates.map((date, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setSelectedDate(date)}
+                        className={`
+                          flex-shrink-0 px-6 py-4 rounded-2xl font-medium transition-all duration-300 
+                          flex flex-col items-center min-w-[100px] border
+                          ${selectedDate?.fullDate === date.fullDate 
+                            ? 'bg-white text-black border-white shadow-lg' 
+                            : 'bg-white/10 text-white hover:bg-white/20 border-white/10 hover:border-white/30'
+                          }
+                        `}
+                      >
+                        <span className="text-sm opacity-80">{date.day}</span>
+                        <span className="text-2xl font-bold my-1">{date.date}</span>
+                        <span className="text-sm opacity-80">{date.month}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Time Slots */}
                 <div className="space-y-8">
-                  {screenings.map((screening, screeningIndex) => (
-                    <div key={screeningIndex} className="space-y-6">
-                      <div className="space-y-2">
-                        <h3 className="text-lg font-medium text-white">{screening.sala}</h3>
-                        {Object.entries(screening.timeSlotsByDay).map(([day, times], dayIndex) => (
-                          <div key={dayIndex} className="space-y-4">
-                            <h4 className="text-base font-medium text-zinc-400">{day}</h4>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                            {times.map((time) => {
-                                // Check if the time is disabled with the updated logic
-                                const isDisabled = isTimeDisabled(day, time);
-                                
-                                return (
-                                  <button
-                                    key={time}
-                                    onClick={() => !isDisabled && handleTimeSelect(day, time, screening.sala)}
-                                    className={`py-3 px-4 backdrop-blur-xl text-white font-medium rounded-xl transition-all duration-500 transform focus:outline-none focus:ring-2 focus:ring-white/30 
-                                      ${isDisabled 
-                                        ? 'opacity-50 cursor-not-allowed bg-zinc-800 line-through' 
-                                        : selectedTime === time && selectedDay === day 
-                                          ? 'bg-white/30 border-2 border-white scale-[1.05] shadow-lg shadow-white/20 hover:scale-[1.02] active:scale-95' 
-                                          : 'bg-white/10 hover:bg-white/20 border-2 border-transparent hover:scale-[1.02] active:scale-95'
-                                      }`}
-                                    disabled={isDisabled}
-                                    title={isDisabled ? "This showtime is no longer available for booking" : ""}
-                                  >
-                                    {time}
-                                  </button>
-                                );
-                            })}
-                            </div>
-                          </div>
-                        ))}
+                  <h2 className="text-2xl font-semibold text-white">Available Times</h2>
+                  {screenings.map((screening, index) => (
+                    <div key={index} className="space-y-4">
+                      <h3 className="text-lg font-medium text-white flex items-center gap-2">
+                        <i className="fas fa-tv text-white/60" />
+                        {screening.sala}
+                      </h3>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                        {selectedDate && screening.timeSlotsByDay[selectedDate.fullDate]?.map((time) => {
+                          const isDisabled = isTimeDisabled(selectedDate.fullDate, time);
+                          return (
+                            <button
+                              key={time}
+                              onClick={() => !isDisabled && handleTimeSelect(selectedDate.fullDate, time, screening.sala)}
+                              disabled={isDisabled}
+                              className={`
+                                relative py-3 px-4 backdrop-blur-xl text-white font-medium rounded-xl 
+                                transition-all duration-300 transform focus:outline-none group
+                                ${isDisabled 
+                                  ? 'opacity-50 cursor-not-allowed bg-zinc-800/50 line-through' 
+                                  : selectedTime === time && selectedDay === selectedDate.fullDate
+                                    ? 'bg-white text-black scale-105 shadow-lg' 
+                                    : 'bg-white/10 hover:bg-white/20 hover:scale-102 active:scale-98 border border-white/10 hover:border-white/30'
+                                }
+                              `}
+                              title={isDisabled ? "This showtime is no longer available" : ""}
+                            >
+                              <div className="flex items-center justify-center gap-2">
+                                <i className={`fas fa-clock text-sm ${isDisabled ? 'opacity-50' : 'opacity-70 group-hover:opacity-100'}`} />
+                                <span>{time}</span>
+                              </div>
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
                   ))}

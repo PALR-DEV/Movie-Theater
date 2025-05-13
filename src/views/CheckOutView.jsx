@@ -63,10 +63,27 @@ const PaymentForm = () => {
             }
         };
 
+        setTimeout(() => {
+            const mockPaymentId = 'mock_' + Math.random().toString(36).substr(2, 9);
+            
+            navigate('/purchase-complete', {
+                state: {
+                    tickets,
+                    total,
+                    movieDetails,
+                    paymentId: mockPaymentId,
+                    ticketId: 'TIX-' + Math.random().toString(36).substr(2, 9)
+                }
+            });
+        }, 2000); // Simulate 2 second processing time
+
         if (total > 0) {
             fetchClientSecret();
         }
     }, [total, movieDetails, formData.email]); // Dependencies to refetch if these change
+
+
+
 
 
 

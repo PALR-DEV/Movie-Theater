@@ -19,18 +19,19 @@ const PurchaseCompleteView = () => {
     return (
         <div className="min-h-screen bg-black text-white relative">
             {showConfetti && (
-                <div className="fixed inset-x-0 bottom-0 h-screen pointer-events-none z-50" style={{ transformOrigin: 'bottom' }}>
+                <div className="fixed inset-x-0 top-0 h-screen pointer-events-none z-50">
                     <Lottie
                         animationData={confettiAnimation}
                         loop={false}
                         autoplay={true}
                         onComplete={() => setShowConfetti(false)}
+                        speed={1.2}
                         style={{
                             position: 'absolute',
                             width: '100%',
                             height: '100%',
-                            transform: 'scale(1.2)',
-                            bottom: 0
+                            transform: 'scale(2)',
+                            top: '-20%'
                         }}
                     />
                 </div>
@@ -80,7 +81,7 @@ const PurchaseCompleteView = () => {
                                 <span className="px-3 py-1 bg-white/5 rounded-full text-sm text-zinc-400">{movieDetails?.time}</span>
                                 <span className="px-3 py-1 bg-white/5 rounded-full text-sm text-zinc-400">Sala {movieDetails?.sala}</span>
                             </div>
-                            <div className="space-y-2">
+                            <div className="space-y-2 mt-4">
                                 {tickets?.adult > 0 && (
                                     <p className="text-zinc-300">{tickets.adult} × Adult Ticket{tickets.adult > 1 ? 's' : ''}</p>
                                 )}
@@ -90,7 +91,49 @@ const PurchaseCompleteView = () => {
                                 {tickets?.kid > 0 && (
                                     <p className="text-zinc-300">{tickets.kid} × Kid Ticket{tickets.kid > 1 ? 's' : ''}</p>
                                 )}
-                                <p className="text-lg font-semibold mt-4">Total Paid: ${(total * 1.115 + 1).toFixed(2)}</p>
+                            </div>
+                        </div>
+
+                        {/* Receipt Summary */}
+                        <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 mb-8 animate-fade-in-up">
+                            <h3 className="text-xl font-semibold mb-4">Purchase Summary</h3>
+                            <div className="space-y-3 text-left max-w-xs mx-auto">
+                                {tickets?.adult > 0 && (
+                                    <div className="flex justify-between text-zinc-400">
+                                        <span>Adult Tickets ({tickets.adult})</span>
+                                        <span>${(tickets.adult * 12.99).toFixed(2)}</span>
+                                    </div>
+                                )}
+                                {tickets?.senior > 0 && (
+                                    <div className="flex justify-between text-zinc-400">
+                                        <span>Senior Tickets ({tickets.senior})</span>
+                                        <span>${(tickets.senior * 8.99).toFixed(2)}</span>
+                                    </div>
+                                )}
+                                {tickets?.kid > 0 && (
+                                    <div className="flex justify-between text-zinc-400">
+                                        <span>Kid Tickets ({tickets.kid})</span>
+                                        <span>${(tickets.kid * 6.99).toFixed(2)}</span>
+                                    </div>
+                                )}
+                                <div className="h-px bg-white/10 my-2"></div>
+                                <div className="flex justify-between text-zinc-400">
+                                    <span>Subtotal:</span>
+                                    <span>${total.toFixed(2)}</span>
+                                </div>
+                                <div className="flex justify-between text-zinc-400">
+                                    <span>IVU (11.5%):</span>
+                                    <span>${(total * 0.115).toFixed(2)}</span>
+                                </div>
+                                <div className="flex justify-between text-zinc-400">
+                                    <span>Service Fee:</span>
+                                    <span>$1.50</span>
+                                </div>
+                                <div className="h-px bg-white/10 my-2"></div>
+                                <div className="flex justify-between font-semibold text-white">
+                                    <span>Total Paid:</span>
+                                    <span>${(total * 1.115 + 1).toFixed(2)}</span>
+                                </div>
                             </div>
                         </div>
 
