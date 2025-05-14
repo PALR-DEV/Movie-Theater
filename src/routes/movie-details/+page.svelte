@@ -78,7 +78,7 @@
 </svelte:head>
 
 <nav
-    class="fixed w-full z-40 bg-white border-b border-gray-200"
+    class="fixed w-full z-40 bg-black border-b border-white/10"
     style="padding-top: env(safe-area-inset-top)"
 >
     <div class="container mx-auto px-4 py-3 flex justify-between items-center">
@@ -117,7 +117,7 @@
                         {movieDetails.title}
                     </h1>
                     <div
-                        class="flex items-center text-gray-600 text-sm md:text-base mb-4 md:mb-6 flex-wrap gap-2"
+                        class="flex items-center text-zinc-400 text-sm md:text-base mb-4 md:mb-6 flex-wrap gap-2"
                     >
                         <span>2024</span>
                         <span class="mx-2">•</span>
@@ -143,7 +143,7 @@
                         <i class="fas fa-ticket-alt mr-2" /> Book Tickets
                         </button> -->
                         <button
-                            class="w-full sm:w-auto px-6 py-4 md:px-8 md:py-4 border border-gray-300 rounded-lg font-medium hover:bg-gray-100 transition text-lg"
+                            class="w-full sm:w-auto px-6 py-4 md:px-8 md:py-4 border border-white/20 rounded-lg font-medium hover:bg-white/10 transition text-lg"
                             on:click={toggleTrailer}
                         >
                             <i class="fas fa-play mr-2" /> Watch Trailer
@@ -153,11 +153,11 @@
                     <!-- Content Sections -->
                     <div class="space-y-8 md:space-y-12">
                         <!-- Synopsis -->
-                        <!-- <section class="bg-white rounded-xl p-6 md:p-8 shadow-sm" >
+                        <!-- <section class="bg-zinc-900 rounded-xl p-6 md:p-8 shadow-sm" >
                             <h2 class="text-xl md:text-2xl font-semibold mb-4">
                                 Overview
                             </h2>
-                            <p class="text-gray-700 leading-relaxed md:text-lg">
+                            <p class="text-zinc-300 leading-relaxed md:text-lg">
                                 {movieDetails.description}
                             </p>
                         </section> -->
@@ -165,7 +165,7 @@
                         <!-- Showtimes -->
                         <section
                             id="booking"
-                            class="bg-white rounded-xl p-6 md:p-8 shadow-sm"
+                            class="bg-zinc-900 rounded-xl p-6 md:p-8 shadow-sm"
                         >
                             <h2 class="text-xl md:text-2xl font-semibold mb-6">
                                 Showtimes
@@ -181,7 +181,7 @@
                                             {selectedDate ===
                                         date
                                             ? 'bg-black text-white'
-                                            : 'border border-gray-300 hover:bg-gray-100'}"
+                                            : 'border border-white/20 hover:bg-white/10'}"
                                         on:click={() => (selectedDate = date)}
                                     >
                                         <div class="text-sm md:text-base">
@@ -205,7 +205,7 @@
                             >
                                 {#each selectedDate.slots as slot}
                                     <button
-                                        class="relative group p-3 rounded-2xl font-medium transition text-base {slot.available ? 'hover:bg-black hover:text-white border border-gray-200' : 'bg-gray-50 text-gray-400 cursor-not-allowed'}"
+                                        class="relative group p-3 rounded-2xl font-medium transition text-base {slot.available ? 'hover:bg-black hover:text-white border border-white/20' : 'bg-gray-50 text-gray-400 cursor-not-allowed'}"
                                         disabled={!slot.available}
                                         on:click={() => selectTimeSlot(slot)}
                                     >
@@ -234,9 +234,9 @@
 {:else}
     <div class="pt-24 md:pt-32 pb-6 px-4 text-center">
         <div
-            class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-gray-300 border-t-black mb-4"
+            class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-zinc-500 border-t-white mb-4"
         />
-        <p class="text-gray-600 font-medium">Loading movie details...</p>
+        <p class="text-zinc-400 font-medium">Loading movie details...</p>
     </div>
 {/if}
 
@@ -271,8 +271,8 @@
 
     :global(body) {
         font-family: "Inter", sans-serif;
-        background-color: #fafafa;
-        color: #0a0a0a;
+        background-color: #000;
+        color: #fff;
         padding-top: env(safe-area-inset-top);
         min-height: 100vh;
         margin: 0;
@@ -285,7 +285,7 @@
         left: 0;
         right: 0;
         height: env(safe-area-inset-top);
-        background-color: #fafafa;
+        background-color: #000;
         z-index: 39;
     }
 
