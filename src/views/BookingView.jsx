@@ -1,19 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom'
 import movieService from '../Services/MovieServices';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const BookingView = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    // Hardcoded values for development
-    // const day = "Thursday, March 28";
-    // const time = "7:00 PM";
-    // const movieId = "12345";
     const { day, time, sala, movieId } = location.state;
     const [movie, setMovie] = useState();
+    const [isImageLoading, setIsImageLoading] = useState(true);
 
     useEffect(() => {
-        const fetchMovie = async() => {
+        const fetchMovie = async () => {
             const getMovie = await movieService.getMoviebyID(movieId);
             console.log(getMovie)
             setMovie(getMovie);
@@ -27,7 +25,6 @@ const BookingView = () => {
         kid: 0
     });
 
-    //FIXME: In the future I need to get this prices from the database not hard coded like this 
     const [total, setTotal] = useState(0);
     const PRICES = {
         adult: 12.99,
@@ -40,22 +37,15 @@ const BookingView = () => {
     }, []);
 
     useEffect(() => {
-        // Comment out the navigation to home for now
-        // if (!location.state) {
-        //   navigate('/');
-        //   return;
-        // }
-
         const adultTickets = tickets.adult;
         const seniorTickets = tickets.senior;
         const kidTickets = tickets.kid;
 
-        // Calculate total - kids are free when there are adult tickets
-        const newTotal = (adultTickets * PRICES.adult) + 
-                        (seniorTickets * PRICES.senior) + 
-                        (adultTickets > 0 ? 0 : kidTickets * PRICES.kid);
+        const newTotal = (adultTickets * PRICES.adult) +
+            (seniorTickets * PRICES.senior) +
+            (adultTickets > 0 ? 0 : kidTickets * PRICES.kid);
         setTotal(newTotal);
-    }, [tickets, location.state, navigate]);
+    }, [tickets]);
 
     const handleTicketChange = (type, operation) => {
         setTickets(prev => {
@@ -66,8 +56,8 @@ const BookingView = () => {
 
     const handleCheckout = () => {
         if (total === 0) return;
-        navigate('/checkout', { 
-            state: { 
+        navigate('/checkout', {
+            state: {
                 tickets,
                 total,
                 movieDetails: {
@@ -87,136 +77,152 @@ const BookingView = () => {
             <button
                 onClick={() => navigate(-1)}
                 className="fixed top-6 left-6 z-10 text-white hover:text-zinc-300 transition-all duration-300 
-          flex items-center gap-2 group bg-black/40 hover:bg-black/60 backdrop-blur-lg 
-          rounded-full p-3.5 border border-white/10 hover:border-white/20 shadow-lg"
+                flex items-center gap-2 group bg-black/40 hover:bg-white/10 backdrop-blur-lg 
+                rounded-full p-3.5 border border-white/10 hover:border-white/20 shadow-lg"
             >
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 transform group-hover:-translate-x-1.5 transition-transform duration-300"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 transform group-hover:-translate-x-1.5 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
             </button>
 
-            {/* Movie Info Section */}
-            <div className="relative w-full h-[50vh] md:h-[70vh] overflow-hidden">
-                <img
-                    className="w-full h-full object-cover object-center transform transition-transform duration-700 hover:scale-105"
-                    src={movie?.poster_url}
-                    alt={movie?.title}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent md:bg-gradient-to-t md:from-black md:via-black/50 md:to-transparent" />
-                <div className="absolute inset-0 flex flex-col justify-center items-center text-center px-8">
-                    <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-4 max-w-4xl mx-auto leading-tight">{movie?.title}</h1>
-                    <p className="text-zinc-300 text-xl md:text-2xl">{day} at {time}</p>
-                </div>
-            </div>
-
-            <div className="max-w-5xl mx-auto px-4 md:px-8 lg:px-12 py-16 relative z-10">
-                {/* Booking Header */}
-                <div className="text-center mb-16">
-                    <h2 className="text-3xl md:text-4xl font-bold mb-6">Select Your Tickets</h2>
-                </div>
-
-                {/* Ticket Selection */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-24">
-                    {/* Adult Tickets */}
-                    <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-4 md:p-6 transition-all duration-300 hover:bg-white/15">
-                        <div className="flex justify-between items-center">
-                            <div>
-                                <h3 className="text-xl font-semibold">Adult</h3>
-                                <p className="text-zinc-400">${PRICES.adult.toFixed(2)}</p>
+            <div className="container mx-auto px-4 pt-24 pb-32 max-w-6xl">
+                <div className="grid md:grid-cols-2 gap-8">
+                    {/* Movie Info Card */}
+                    <div className="bg-zinc-900/50 backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl 
+                                transform transition-all duration-500 hover:shadow-white/5">
+                        {/* Movie Poster */}
+                        <div className="relative h-72 md:h-96 overflow-hidden">
+                            {isImageLoading && (
+                                <div className="absolute inset-0 flex items-center justify-center bg-zinc-900">
+                                    <LoadingSpinner />
+                                </div>
+                            )}
+                            <img
+                                className={`w-full h-full object-cover transition-transform duration-700 hover:scale-110 
+                                         ${isImageLoading ? 'opacity-0' : 'opacity-100'}`}
+                                src={movie?.poster_url}
+                                alt={movie?.title}
+                                onLoad={() => setIsImageLoading(false)}
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent" />
+                            <div className="absolute bottom-0 left-0 right-0 p-6">
+                                <h1 className="text-3xl md:text-4xl font-bold mb-2">
+                                    {movie?.title}
+                                </h1>
+                                <div className="flex items-center gap-4 text-zinc-300">
+                                    <div className="flex items-center gap-2">
+                                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12zm1-6.41V4a1 1 0 10-2 0v6c0 .28.11.53.29.71l4 4a1 1 0 001.42-1.42L11 9.59z" />
+                                        </svg>
+                                        <span>{time}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" />
+                                        </svg>
+                                        <span>{day}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M7 3a1 1 0 012 0v1h2V3a1 1 0 112 0v1h2a2 2 0 012 2v2H3V6a2 2 0 012-2h2V3zM3 9h18v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                        </svg>
+                                        <span>Room {sala}</span>
+                                    </div>
+                                </div>
                             </div>
-                            <div className="flex items-center gap-3">
-                                <button
-                                    onClick={() => handleTicketChange('adult', 'subtract')}
-                                    className="w-8 h-8 md:w-10 md:h-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-white/20 transition-all duration-300"
-                                    disabled={tickets.adult === 0}
-                                >
-                                    <span className="text-xl md:text-2xl font-light">-</span>
-                                </button>
-                                <span className="w-6 md:w-8 text-center text-lg md:text-xl">{tickets.adult}</span>
-                                <button
-                                    onClick={() => handleTicketChange('adult', 'add')}
-                                    className="w-8 h-8 md:w-10 md:h-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-white/20 transition-all duration-300"
-                                >
-                                    <span className="text-xl md:text-2xl font-light">+</span>
-                                </button>
+                        </div>
+                        <div className="p-6">
+                            <div className="flex flex-col space-y-4">
+                                <div className="bg-white/5 rounded-xl p-4">
+                                    <h3 className="text-lg font-semibold mb-2">Screening Room Details</h3>
+                                    <div className="flex items-center gap-4">
+                                        <div className="flex items-center gap-2 text-zinc-300">
+                                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M2 6a2 2 0 012-2h12a2 2 0 012 2v2a2 2 0 100 4v2a2 2 0 01-2 2H4a2 2 0 01-2-2v-2a2 2 0 100-4V6z" />
+                                            </svg>
+                                            <span className="font-medium">Room {sala}</span>
+                                        </div>
+                                        <div className="text-xs px-3 py-1 bg-white/10 rounded-full text-zinc-300">
+                                            Premium Seating
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Senior Tickets */}
-                    <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-4 md:p-6 transition-all duration-300 hover:bg-white/15">
-                        <div className="flex justify-between items-center">
-                            <div>
-                                <h3 className="text-xl font-semibold">Senior</h3>
-                                <p className="text-zinc-400">${PRICES.senior.toFixed(2)}</p>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <button
-                                    onClick={() => handleTicketChange('senior', 'subtract')}
-                                    className="w-8 h-8 md:w-10 md:h-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-white/20 transition-all duration-300"
-                                    disabled={tickets.senior === 0}
-                                >
-                                    <span className="text-xl md:text-2xl font-light">-</span>
-                                </button>
-                                <span className="w-6 md:w-8 text-center text-lg md:text-xl">{tickets.senior}</span>
-                                <button
-                                    onClick={() => handleTicketChange('senior', 'add')}
-                                    className="w-8 h-8 md:w-10 md:h-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-white/20 transition-all duration-300"
-                                >
-                                    <span className="text-xl md:text-2xl font-light">+</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                    {/* Ticket Selection Card */}
+                    <div className="bg-zinc-900/50 backdrop-blur-xl rounded-3xl p-8 shadow-2xl 
+                                transform transition-all duration-500 hover:shadow-white/5">
+                        <h2 className="text-2xl font-bold mb-8">
+                            Select Your Tickets
+                        </h2>
 
-                    {/* Kid Tickets */}
-                    <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-4 md:p-6 transition-all duration-300 hover:bg-white/15">
-                        <div className="flex justify-between items-center">
-                            <div>
-                                <h3 className="text-xl font-semibold">Kid</h3>
-                                <p className="text-zinc-400">${PRICES.kid.toFixed(2)}</p>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <button
-                                    onClick={() => handleTicketChange('kid', 'subtract')}
-                                    className="w-8 h-8 md:w-10 md:h-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-white/20 transition-all duration-300"
-                                    disabled={tickets.kid === 0}
+                        {/* Ticket Types */}
+                        <div className="space-y-4 mb-8">
+                            {Object.entries(PRICES).map(([type, price]) => (
+                                <div key={type}
+                                    className="group flex items-center justify-between p-4 bg-white/5 rounded-2xl
+                                             hover:bg-white/10 transition-all duration-300 transform hover:scale-[1.02]"
                                 >
-                                    <span className="text-xl md:text-2xl font-light">-</span>
-                                </button>
-                                <span className="w-6 md:w-8 text-center text-lg md:text-xl">{tickets.kid}</span>
-                                <button
-                                    onClick={() => handleTicketChange('kid', 'add')}
-                                    className="w-8 h-8 md:w-10 md:h-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-white/20 transition-all duration-300"
-                                >
-                                    <span className="text-xl md:text-2xl font-light">+</span>
-                                </button>
-                            </div>
+                                    <div className="flex flex-col">
+                                        <h3 className="text-lg font-semibold capitalize group-hover:text-white 
+                                                     transition-colors duration-300">
+                                            {type}
+                                        </h3>
+                                        <p className="text-zinc-400 text-sm">${price.toFixed(2)}</p>
+                                    </div>
+                                    <div className="flex items-center gap-3 bg-black/20 rounded-xl p-1">
+                                        <button
+                                            onClick={() => handleTicketChange(type, 'subtract')}
+                                            className="w-8 h-8 rounded-lg border border-white/10 flex items-center justify-center
+                                                     hover:bg-white hover:text-black disabled:opacity-50
+                                                     transition-all duration-300 disabled:hover:bg-transparent
+                                                     disabled:hover:border-white/10 disabled:hover:text-white"
+                                            disabled={tickets[type] === 0}
+                                        >
+                                            <span className="text-xl font-light">-</span>
+                                        </button>
+                                        <span className="w-8 text-center text-lg font-medium">{tickets[type]}</span>
+                                        <button
+                                            onClick={() => handleTicketChange(type, 'add')}
+                                            className="w-8 h-8 rounded-lg border border-white/10 flex items-center justify-center
+                                                     hover:bg-white hover:text-black
+                                                     transition-all duration-300"
+                                        >
+                                            <span className="text-xl font-light">+</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
-                    </div>
-                </div>
 
-                {/* Order Summary */}
-                <div className="fixed bottom-0 left-0 right-0 bg-zinc-900/95 backdrop-blur-xl border-t border-white/10 p-6 md:p-8 z-50">
-                    <div className="max-w-4xl mx-auto">
-                        <div className="flex items-center justify-between mb-6">
-                            <div className="space-y-1">
-                                <p className="text-zinc-400">Total Amount</p>
-                                <p className="text-2xl font-bold">${total.toFixed(2)}</p>
+                        {/* Total and Checkout */}
+                        <div className="pt-6 border-t border-white/10">
+                            <div className="flex flex-col gap-6">
+                                <div className="flex justify-between items-baseline">
+                                    <div className="flex flex-col">
+                                        <p className="text-zinc-400 text-sm">Total Amount</p>
+                                        <p className="text-3xl font-bold">
+                                            ${total.toFixed(2)}
+                                        </p>
+                                    </div>
+                                    <div className="text-sm text-zinc-400">
+                                        {Object.entries(tickets).reduce((acc, [_, count]) => acc + count, 0)} tickets
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={handleCheckout}
+                                    disabled={total === 0}
+                                    className={`w-full py-4 rounded-xl font-semibold text-lg transition-all duration-500 
+                                             transform hover:translate-y-[-2px] ${total === 0
+                                            ? 'bg-white/5 text-zinc-500 cursor-not-allowed'
+                                            : 'bg-white text-black hover:shadow-lg hover:shadow-white/25'
+                                        }`}
+                                >
+                                    {total === 0 ? 'Select Tickets' : 'Continue to Payment'}
+                                </button>
                             </div>
-                            <button
-                                onClick={handleCheckout}
-                                disabled={total === 0}
-                                className={`px-8 py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-[1.02] ${total === 0 ? 'bg-white/20 text-zinc-500 cursor-not-allowed' : 'bg-white text-black hover:bg-zinc-200'}`}
-                            >
-                                Continue to Payment
-                            </button>
                         </div>
                     </div>
                 </div>
