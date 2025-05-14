@@ -31,7 +31,7 @@
     function selectTimeSlot(slot) {
         if (slot.available) {
             selectedTime = slot;
-            goto(`/ticket-selection?movieId=${movieId}&date=${selectedDate.date}&month=${selectedDate.month}&time=${slot.time}`);
+            goto(`/ticket-selection?movieId=${movieId}&date=${selectedDate.date}&month=${selectedDate.month}&time=${slot.time}&screen=${slot.screenName}`);
         }
     }
 
@@ -205,22 +205,18 @@
                             >
                                 {#each selectedDate.slots as slot}
                                     <button
-                                        class="relative group p-3 rounded-2xl font-medium transition text-base {slot.available ? 'hover:bg-black hover:text-white border border-white/20' : 'bg-gray-50 text-gray-400 cursor-not-allowed'}"
+                                        class="relative group p-3 rounded-2xl font-medium transition text-left {slot.available ? 'hover:bg-black hover:text-white border border-white/20' : 'bg-gray-50/10 text-gray-400 cursor-not-allowed'}"
                                         disabled={!slot.available}
                                         on:click={() => selectTimeSlot(slot)}
                                     >
-                                        <div
-                                            class="flex items-center justify-center gap-2"
-                                        >
-                                            <i
-                                                class="fas fa-clock text-sm opacity-70"
-                                            />
-                                            <span>{slot.time}</span>
+                                        <div class="flex flex-col gap-2">
+                                            <div class="flex items-center justify-center gap-2">
+                                                <i class="fas fa-clock text-sm opacity-70" />
+                                                <span>{slot.time}</span>
+                                            </div>
                                         </div>
                                         {#if slot.available}
-                                            <div
-                                                class="absolute inset-0 rounded-2xl bg-black opacity-0 group-hover:opacity-5 transition"
-                                            />
+                                            <div class="absolute inset-0 rounded-2xl bg-black opacity-0 group-hover:opacity-5 transition" />
                                         {/if}
                                     </button>
                                 {/each}

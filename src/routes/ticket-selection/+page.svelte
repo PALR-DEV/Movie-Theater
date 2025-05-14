@@ -1,14 +1,30 @@
-<script>
+<script lang="ts">
     import { goto } from "$app/navigation";
     import { movies } from "$lib/JSON_DATA/movies.json";
     import { page } from "$app/stores";
     import { onMount } from "svelte";
     
-    let movie;
+    interface Movie {
+        id: string;
+        title: string;
+        posterUrl: string;
+        genre: string;
+        duration: string;
+        rating: string;
+    }
+
+    interface Tickets {
+        adult: number;
+        senior: number;
+        kid: number;
+    }
+
+    let movie: Movie | undefined;
     let isImageLoading = true;
-    let time = "7:30 PM";
-    let day = "Friday";
-    let sala = "A";
+    let time = $page.url.searchParams.get('time') || "7:30 PM";
+    let date = $page.url.searchParams.get('date') || "";
+    let month = $page.url.searchParams.get('month') || "";
+    let screen = $page.url.searchParams.get('screen') || "";
 
     // Get movie from URL parameters and movies.json
     $: {
@@ -20,7 +36,7 @@
         }
     }
 
-    let tickets = {
+    let tickets: Tickets = {
         adult: 0,
         senior: 0,
         kid: 0,
@@ -37,7 +53,7 @@
         tickets.senior * PRICES.senior +
         (tickets.adult > 0 ? 0 : tickets.kid * PRICES.kid);
 
-    function handleTicketChange(type, operation) {
+    function handleTicketChange(type: keyof Tickets, operation: 'add' | 'subtract') {
         tickets = {
             ...tickets,
             [type]:
@@ -48,14 +64,15 @@
     }
 
     function handleCheckout() {
-        if (total === 0) return;
+        if (total === 0 || !movie) return;
 
         const params = new URLSearchParams({
             movieId: movie.id,
             title: movie.title,
-            sala,
+            screen,
             time,
-            day,
+            date,
+            month,
             total: total.toFixed(2)
         });
 
@@ -99,40 +116,55 @@
     <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-8">
         <!-- Movie Info -->
         <div class="bg-zinc-900/50 rounded-3xl overflow-hidden shadow-xl">
-            <div class="relative h-96">
+            <div class="relative h-[600px]">
                 {#if isImageLoading}
                     <div
                         class="absolute inset-0 flex items-center justify-center bg-zinc-900"
                     >
-                        Loading...
+                        <div class="animate-pulse">
+                            <i class="fas fa-circle-notch fa-spin text-2xl text-zinc-600"></i>
+                        </div>
                     </div>
                 {/if}
                 <img
                     class="w-full h-full object-cover transition-opacity duration-700"
-                    src={movie.posterUrl}
-                    alt={movie.title}
+                    src={movie?.posterUrl}
+                    alt={movie?.title}
                     on:load={() => (isImageLoading = false)}
                     class:opacity-0={isImageLoading}
                     class:opacity-100={!isImageLoading}
                 />
-                <div
-                    class="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent"
-                />
-                <div class="absolute bottom-0 left-0 right-0 p-6">
-                    <h1 class="text-3xl font-bold">{movie.title}</h1>
-                    <div class="flex gap-4 text-zinc-300 mt-2">
-                        <span>{time}</span>
-                        <span>{day}</span>
-                        <span>Room {sala}</span>
+                <!-- Multiple layered gradient overlays for better text contrast -->
+                <div class="absolute inset-0 bg-black/30"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent"></div>
+                <div class="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black to-transparent"></div>
+                
+                <!-- Content -->
+                <div class="absolute bottom-0 left-0 right-0 p-8">
+                    <div class="space-y-4">
+                        <h1 class="text-4xl font-bold text-shadow-lg">{movie?.title}</h1>
+                        <div class="flex flex-wrap items-center gap-4 text-shadow">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-clock text-zinc-200"></i>
+                                <span class="font-medium">{time}</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-calendar text-zinc-200"></i>
+                                <span class="font-medium">{date} {month}</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-tv text-zinc-200"></i>
+                                <span class="font-medium">{screen}</span>
+                            </div>
+                        </div>
+                        <div class="flex gap-2 pt-2">
+                            {#each [movie?.genre, movie?.duration, movie?.rating] as tag}
+                                <span class="text-sm px-3 py-1 bg-black/40 backdrop-blur-sm rounded-full text-white/90 shadow-lg">
+                                    {tag}
+                                </span>
+                            {/each}
+                        </div>
                     </div>
-                </div>
-            </div>
-            <div class="p-6">
-                <h3 class="text-lg font-semibold mb-2">
-                    Screening Room Details
-                </h3>
-                <div class="flex items-center gap-4 text-zinc-300">
-                    <span class="font-medium">Room: {sala}</span>
                 </div>
             </div>
         </div>
@@ -158,17 +190,17 @@
                         >
                             <button
                                 on:click={() =>
-                                    handleTicketChange(type, "subtract")}
+                                    handleTicketChange(type as keyof Tickets, "subtract")}
                                 class="w-8 h-8 rounded-lg border border-white/10 flex items-center justify-center hover:bg-white hover:text-black"
-                                disabled={tickets[type] === 0}
+                                disabled={tickets[type as keyof Tickets] === 0}
                             >
                                 -
                             </button>
                             <span class="w-8 text-center text-lg font-medium"
-                                >{tickets[type]}</span
+                                >{tickets[type as keyof Tickets]}</span
                             >
                             <button
-                                on:click={() => handleTicketChange(type, "add")}
+                                on:click={() => handleTicketChange(type as keyof Tickets, "add")}
                                 class="w-8 h-8 rounded-lg border border-white/10 flex items-center justify-center hover:bg-white hover:text-black"
                             >
                                 +
