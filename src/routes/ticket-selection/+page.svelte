@@ -1,26 +1,30 @@
 <script>
+    import { goto } from "$app/navigation";
+    import { movies } from "$lib/JSON_DATA/movies.json";
+    import { page } from "$app/stores";
     import { onMount } from "svelte";
-
-    let movie = {
-        id: "1",
-        title: "Inception",
-        poster_url: "https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_.jpg",
-        screenings: [{ sala: "A" }],
-    };
-
+    
+    let movie;
+    let isImageLoading = true;
     let time = "7:30 PM";
     let day = "Friday";
     let sala = "A";
 
-    let isImageLoading = true;
+    // Get movie from URL parameters and movies.json
+    $: {
+        const movieId = $page.url.searchParams.get('movieId');
+        movie = movies.find(m => m.id === movieId);
+        if (!movie) {
+            // Redirect back if movie not found
+            goto('/');
+        }
+    }
 
     let tickets = {
         adult: 0,
         senior: 0,
         kid: 0,
     };
-
-    let total = 0;
 
     const PRICES = {
         adult: 12.99,
@@ -45,19 +49,27 @@
 
     function handleCheckout() {
         if (total === 0) return;
-        console.log("Proceed to checkout with:", {
-            tickets,
-            total,
-            movieDetails: {
-                title: movie.title,
-                movieId: movie.id,
-                sala: movie.screenings[0].sala,
-                day,
-                time,
-            },
+
+        const params = new URLSearchParams({
+            movieId: movie.id,
+            title: movie.title,
+            sala,
+            time,
+            day,
+            total: total.toFixed(2)
         });
+
+        Object.entries(tickets).forEach(([type, count]) => {
+            if (count > 0) {
+                params.append(type, count.toString());
+            }
+        });
+
+        goto(`/checkout?${params.toString()}`);
     }
 </script>
+
+
 
 <div class="min-h-screen bg-black text-white p-8">
     <!-- Back Button -->
@@ -97,7 +109,7 @@
                 {/if}
                 <img
                     class="w-full h-full object-cover transition-opacity duration-700"
-                    src={movie.poster_url}
+                    src={movie.posterUrl}
                     alt={movie.title}
                     on:load={() => (isImageLoading = false)}
                     class:opacity-0={isImageLoading}
