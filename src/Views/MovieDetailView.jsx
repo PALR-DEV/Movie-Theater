@@ -35,7 +35,7 @@ const MovieDetailView = () => {
 
         const fetchScreenings = async () => {
             try {
-                
+
                 
             } catch (error) {
                 setError(error);
@@ -172,18 +172,27 @@ const MovieDetailView = () => {
                         <div className="space-y-4">
                             <h2 className="text-xl font-semibold text-white">Available Times</h2>
                             {screenings.map((screening, idx) => (
-                                <div key={idx} className="bg-zinc-900/50 backdrop-blur-xl rounded-xl p-4 mb-4">
-                                    <h3 className="text-base font-medium text-white">{screening.sala}</h3>
-                                    <div className="grid grid-cols-3 gap-3 mt-3">
+                                <div key={idx} className="bg-zinc-900/50 backdrop-blur-xl rounded-xl p-6 mb-4">
+                                    <h3 className="text-lg font-medium text-white mb-4">{screening.sala}</h3>
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                                         {screening.timeSlotsByDay[selectedDate]?.map((time, j) => (
                                             <button
                                                 key={j}
                                                 onClick={() => handleTimeSelect(selectedDate, time)}
                                                 className={`
-                                                    flex items-center justify-center gap-2 py-2 px-3 text-base font-semibold rounded-lg transition-transform duration-200
-                                                    ${selectedTime === time ? 'bg-white text-black scale-105 shadow-xl' : 'bg-white/10 text-white hover:bg-white/20 hover:scale-102'}
+                                                    flex items-center justify-center gap-2 py-4 px-6 
+                                                    text-lg font-semibold rounded-xl
+                                                    transition-all duration-300 ease-out
+                                                    hover:scale-105 active:scale-95
+                                                    ${selectedTime === time 
+                                                        ? 'bg-white text-black shadow-xl ring-2 ring-white/50 ring-offset-2 ring-offset-black' 
+                                                        : 'bg-white/10 text-white hover:bg-white/20'
+                                                    }
                                                 `}
                                             >
+                                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12zm1-6.41V4a1 1 0 10-2 0v6c0 .28.11.53.29.71l4 4a1 1 0 001.42-1.42L11 9.59z" />
+                                                </svg>
                                                 <span>{time}</span>
                                             </button>
                                         ))}
@@ -194,14 +203,20 @@ const MovieDetailView = () => {
 
                         {/* Next Button */}
                         <div className="mt-6">
-                            <button
-                                onClick={() => navigate('/select-tickets', { state: { movie, selectedDate, selectedTime } })}
-                                disabled={!selectedTime}
-                                className={`w-full px-5 py-3 text-lg font-semibold rounded-lg transition-colors duration-200 ${selectedTime ? 'bg-white text-black hover:bg-gray-400 hover:text-white' : 'bg-gray-600 text-gray-400 cursor-not-allowed' }`}
-                            >
-                                Next: Select Tickets
-                            </button>
-                        </div>
+    <button
+        onClick={() => navigate('/select-tickets', { state: { movie, selectedDate, selectedTime } })}
+        disabled={!selectedTime}
+        className={`
+            w-full px-5 py-3 text-lg font-semibold rounded-lg transition-colors duration-200
+            ${selectedTime 
+                ? 'bg-white text-black hover:bg-gray-900 hover:text-white' 
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            }
+        `}
+    >
+        Next: Select Tickets
+    </button>
+</div>
                     </div>
                 </div>
             </div>

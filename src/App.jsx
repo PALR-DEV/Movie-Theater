@@ -5,6 +5,7 @@ import './App.css'
 import HomeView from './Views/HomeView'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import MovieDetailView from './Views/MovieDetailView'
+import TicketSelectionView from './Views/TicketSelectionView'
 
 function App() {
 
