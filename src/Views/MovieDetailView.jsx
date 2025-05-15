@@ -11,6 +11,7 @@ import formatTime from '../../Utils/FormatTime';
 import isTimeTooSoon from '../../Utils/isTimeTooSoon';
 import formatDate from '../../Utils/FormatDate';
 
+
 const MovieDetailView = () => {
     const navigate = useNavigate();
     const [showTrailer, setShowTrailer] = useState(false);
@@ -22,6 +23,8 @@ const MovieDetailView = () => {
     const [screenings, setScreenings] = useState([]);
     const [searchParams] = useSearchParams();
     const movieId = searchParams.get('movieId');
+
+
 
 
 
@@ -198,13 +201,13 @@ const MovieDetailView = () => {
                                             const formattedDate = formatDate(date);
                                             return (
                                                 <button
-                                                key={index}
-                                                onClick={() => setSelectedDate(date)}
-                                                className={`flex-shrink-0 px-4 py-3 rounded-xl font-medium transition duration-300 flex flex-col items-center min-w-[90px] ${selectedDate === date ? 'bg-white text-black' : 'bg-white/10 text-white hover:bg-white/20' }`} >
-                                                <span className="text-sm opacity-80">{formattedDate.weekday}</span>
-                                                <span className="text-xl font-bold my-0.5">{formattedDate.day}</span>
-                                                <span className="text-sm opacity-80">{formattedDate.month}</span>
-                                            </button>
+                                                    key={index}
+                                                    onClick={() => setSelectedDate(date)}
+                                                    className={`flex-shrink-0 px-4 py-3 rounded-xl font-medium transition duration-300 flex flex-col items-center min-w-[90px] ${selectedDate === date ? 'bg-white text-black' : 'bg-white/10 text-white hover:bg-white/20'}`} >
+                                                    <span className="text-sm opacity-80">{formattedDate.weekday}</span>
+                                                    <span className="text-xl font-bold my-0.5">{formattedDate.day}</span>
+                                                    <span className="text-sm opacity-80">{formattedDate.month}</span>
+                                                </button>
                                             )
                                         })}
                                     </div>
@@ -246,7 +249,7 @@ const MovieDetailView = () => {
                                 {/* --- Next Button: Proceed to Select Tickets --- */}
                                 <div className="mt-6">
                                     <button
-                                        onClick={() => navigate('/select-tickets', { state: { movie, selectedTime, selectedDate } })}
+                                        onClick={() => navigate('/select-tickets', { state: { movie, selectedTime, selectedDate, sala: screenings[0].sala} })}
                                         disabled={!selectedTime}
                                         className={`
                                             w-full px-5 py-3 text-lg font-semibold rounded-lg transition-colors duration-200

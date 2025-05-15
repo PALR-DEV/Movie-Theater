@@ -15,6 +15,7 @@ function App() {
         <Route path="/" element={<HomeView />} />
         {/* Add more routes as needed */}
         <Route path="/movie" element={<MovieDetailView />} />
+        <Route path="/select-tickets" element={<TicketSelectionView />} />
       </Routes>
     </Router>
   )
