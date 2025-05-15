@@ -1,0 +1,26 @@
+{
+    "movies": [
+        {
+            "id": 1,
+            "title": "Dune: Part Two",
+            "duration": "2h 46m",
+            "poster_url": "https://image.tmdb.org/t/p/w500/8b8R8l88Qje9dn9OE8PY05Nxl1X.jpg",
+            "categories": [
+                "Adventure",
+                "Sci-Fi",
+                "Drama"
+            ]
+        },
+        {
+            "id": 2,
+            "title": "Star Wars: Episode III – Revenge of the Sith",
+            "duration": "2h 20m",
+            "poster_url": "https://images.fandango.com/ImageRenderer/0/0/redesign/static/img/default_poster.png/0/images/masterrepository/Fandango/239973/starwarsepisodeiii-rerelease-posterart.jpg",
+            "categories": [
+                "Action",
+                "Sci-Fi",
+                "Fantasy"
+            ]
+        }
+    ]
+}
