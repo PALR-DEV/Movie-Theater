@@ -1,3 +1,10 @@
+/**
+ * MovieDetailView.jsx
+ * -------------------
+ * This view displays detailed information about a selected movie, including its poster,
+ * title, categories, duration, and available showtimes. It allows users to watch the trailer,
+ * select a date and screening time, and proceed to ticket selection.
+ */
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
@@ -13,6 +20,7 @@ const MovieDetailView = () => {
     const [searchParams] = useSearchParams();
     const movieId = searchParams.get('movieId');
 
+    // Helper function to format time from "HH:MM" to "h:MM AM/PM"
     const formatTime = (time) => {
         const [hours, minutes] = time.split(':');
         const hour = parseInt(hours);
@@ -21,6 +29,12 @@ const MovieDetailView = () => {
         return `${formattedHour}:${minutes} ${ampm}`;
     }
 
+    /**
+     * useEffect: Fetch movie details and screening showtimes when the movieId changes.
+     * - Fetches movie data from movies.json and sets the movie state.
+     * - Fetches showtimes from showtimes.json, groups by sala, and sets screenings state.
+     * - Sets loading and error states accordingly.
+     */
     useEffect(() => {
         const fetchMovieData = async () => {
             try {
@@ -56,20 +70,17 @@ const MovieDetailView = () => {
                     throw new Error('Showtimes not found for this movie');
                 }
 
-                // Group screenings by sala
-                const groupedScreenings = movieScreenings.reduce((acc, screening) => {
-                    if (!acc[screening.sala]) {
-                        acc[screening.sala] = {
-                            sala: screening.sala,
-                            dates: {}
-                        };
-                    }
-                    acc[screening.sala].dates[screening.date] = screening.times;
-                    return acc;
-                }, {});
+                // Format screenings by dates
+                const formattedScreenings = {
+                    sala: movieScreenings[0].sala,
+                    dates: movieScreenings.reduce((dates, screening) => {
+                        dates[screening.date] = screening.times;
+                        return dates;
+                    }, {})
+                };
 
-                setScreenings(Object.values(groupedScreenings));
-
+                setScreenings([formattedScreenings]);
+                
                 // Set initial selected date to the earliest available date
                 const availableDates = [...new Set(movieScreenings.map(s => s.date))].sort();
                 if (availableDates.length > 0) {
@@ -106,6 +117,7 @@ const MovieDetailView = () => {
         </div>;
     }
 
+    // Handlers for trailer modal and time selection
     const openTrailer = () => setShowTrailer(true);
     const closeTrailer = () => setShowTrailer(false);
     const handleTimeSelect = (day, time) => {
@@ -118,7 +130,7 @@ const MovieDetailView = () => {
 
     return (
         <div className="min-h-screen bg-black text-white">
-            {/* Back button */}
+            {/* --- Back Button: Returns to the previous page --- */}
             <button
                 onClick={() => navigate(-1)}
                 className="fixed top-6 left-6 z-10 flex items-center gap-2 p-3 bg-black/40 backdrop-blur-lg rounded-full border border-white/10 text-white hover:bg-black/60 hover:border-white/20 transition-all duration-300"
@@ -129,7 +141,7 @@ const MovieDetailView = () => {
             </button>
 
             <div className="md:flex md:min-h-screen">
-                {/* Poster */}
+                {/* --- Movie Poster and Mobile Trailer Button --- */}
                 <div className="relative w-full md:w-2/5 h-[50vh] md:h-screen overflow-hidden">
                     <img
                         src={movie.poster_url}
@@ -138,7 +150,7 @@ const MovieDetailView = () => {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t md:from-black md:via-black/30 md:to-transparent from-black/90 via-black/30 to-transparent" />
 
-                    {/* Watch Trailer Button - Mobile Only */}
+                    {/* --- Watch Trailer Button (Mobile Only) --- */}
                     <button
                         onClick={openTrailer}
                         className="md:hidden absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 px-6 py-3 bg-white text-black font-semibold rounded-full hover:bg-opacity-90 transition-all duration-300 shadow-lg"
@@ -151,7 +163,7 @@ const MovieDetailView = () => {
                     </button>
                 </div>
 
-                {/* Info */}
+                {/* --- Movie Info, Trailer Button (Desktop), and Screenings Selector --- */}
                 <div className="relative md:w-3/5 flex items-start">
                     <div className="px-6 py-6 w-full max-w-3xl mx-auto space-y-6">
                         <h1 className="text-4xl sm:text-5xl font-bold text-white">{movie.title}</h1>
@@ -166,7 +178,7 @@ const MovieDetailView = () => {
                                     </span>
                                 ))}
                             </div>
-                            {/* Watch Trailer Button - Desktop Only */}
+                            {/* --- Watch Trailer Button (Desktop Only) --- */}
                             <button
                                 onClick={openTrailer}
                                 className="hidden md:inline-flex items-center gap-2 px-6 py-3 bg-white text-black font-semibold rounded-full hover:bg-opacity-90 transition-all duration-300 shadow-lg w-fit"
@@ -179,9 +191,10 @@ const MovieDetailView = () => {
                             </button>
                         </div>
 
+                        {/* --- Screenings Selector: Date and Time --- */}
                         {screenings.length > 0 ? (
                             <>
-                                {/* Date Selector */}
+                                {/* --- Date Selector --- */}
                                 <div className="space-y-3">
                                     <h2 className="text-xl font-semibold text-white">Select Date</h2>
                                     <div className="flex space-x-3 overflow-x-auto pb-3 scrollbar-hide">
@@ -205,37 +218,35 @@ const MovieDetailView = () => {
                                 {/* Time Slots */}
                                 <div className="space-y-4">
                                     <h2 className="text-xl font-semibold text-white">Available Times</h2>
-                                    {screenings.map((screening, idx) => (
-                                        <div key={idx} className="bg-zinc-900/50 backdrop-blur-xl rounded-xl p-6 mb-4">
-                                            <h3 className="text-lg font-medium text-white mb-4">{screening.sala}</h3>
-                                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                                                {screening.dates[selectedDate]?.map((time, j) => (
-                                                    <button
-                                                        key={j}
-                                                        onClick={() => handleTimeSelect(selectedDate, time)}
-                                                        className={`
-                                                        flex items-center justify-center gap-2 py-4 px-6 
-                                                        text-lg font-semibold rounded-xl
-                                                        transition-all duration-300 ease-out
-                                                        hover:scale-105 active:scale-95
-                                                        ${selectedTime === time
-                                                                ? 'bg-white text-black shadow-xl ring-2 ring-white/50 ring-offset-2 ring-offset-black'
-                                                                : 'bg-white/10 text-white hover:bg-white/20'
-                                                            }
-                                                    `}
-                                                    >
-                                                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                                            <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12zm1-6.41V4a1 1 0 10-2 0v6c0 .28.11.53.29.71l4 4a1 1 0 001.42-1.42L11 9.59z" />
-                                                        </svg>
-                                                        <span>{formatTime(time)}</span>
-                                                    </button>
-                                                ))}
-                                            </div>
+                                    <div className="bg-zinc-900/50 backdrop-blur-xl rounded-xl p-6">
+                                        <h3 className="text-lg font-medium text-white mb-4">{screenings[0].sala}</h3>
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                                            {screenings[0].dates[selectedDate]?.map((time, j) => (
+                                                <button
+                                                    key={j}
+                                                    onClick={() => handleTimeSelect(selectedDate, time)}
+                                                    className={`
+                                                    flex items-center justify-center gap-2 py-4 px-6 
+                                                    text-lg font-semibold rounded-xl
+                                                    transition-all duration-300 ease-out
+                                                    hover:scale-105 active:scale-95
+                                                    ${selectedTime === time
+                                                            ? 'bg-white text-black shadow-xl ring-2 ring-white/50 ring-offset-2 ring-offset-black'
+                                                            : 'bg-white/10 text-white hover:bg-white/20'
+                                                        }
+                                                `}
+                                                >
+                                                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12zm1-6.41V4a1 1 0 10-2 0v6c0 .28.11.53.29.71l4 4a1 1 0 001.42-1.42L11 9.59z" />
+                                                    </svg>
+                                                    <span>{formatTime(time)}</span>
+                                                </button>
+                                            ))}
                                         </div>
-                                    ))}
+                                    </div>
                                 </div>
 
-                                {/* Next Button */}
+                                {/* --- Next Button: Proceed to Select Tickets --- */}
                                 <div className="mt-6">
                                     <button
                                         onClick={() => navigate('/select-tickets', { state: { movie, selectedTime, selectedDate } })}
@@ -253,6 +264,7 @@ const MovieDetailView = () => {
                                 </div>
                             </>
                         ) : (
+                            // --- No Showtimes Available Message ---
                             <div className="flex flex-col items-center justify-center py-12 px-4 bg-zinc-900/50 backdrop-blur-xl rounded-xl text-center">
                                 <svg className="w-16 h-16 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -265,7 +277,7 @@ const MovieDetailView = () => {
                 </div>
             </div>
 
-            {/* Trailer Modal */}
+            {/* --- Trailer Modal: Shows YouTube trailer in a modal overlay --- */}
             {showTrailer && (
                 <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
                     <div className="relative w-full max-w-5xl aspect-video">
