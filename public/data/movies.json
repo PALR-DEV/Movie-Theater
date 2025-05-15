@@ -9,7 +9,8 @@
                 "Adventure",
                 "Sci-Fi",
                 "Drama"
-            ]
+            ],
+            "youtube_trailer_id": "Way9Dexny3w"
         },
         {
             "id": "a1b2c3d4-e5f6-47g8-h9i0-j1k2l3m4n5o6",
@@ -20,7 +21,8 @@
                 "Action",
                 "Sci-Fi",
                 "Fantasy"
-            ]
+            ],
+            "youtube_trailer_id": "5UnjrG_N8hU"
         },
         {
             "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -31,7 +33,8 @@
                 "Biography",
                 "Drama",
                 "History"
-            ]
+            ],
+            "youtube_trailer_id": "uYPbbksJxIg"
         },
         {
             "id": "7e1b2a4c-c56d-4b3f-a932-8dc8e7c67b3e",
@@ -42,7 +45,8 @@
                 "Action",
                 "Adventure",
                 "Fantasy"
-            ]
+            ],
+            "youtube_trailer_id": "JfVOs4VSpmA"
         },
         {
             "id": "98e3fd6f-fccb-4c6b-90d7-f2c55738b6ec",
@@ -53,7 +57,8 @@
                 "Action",
                 "Adventure",
                 "Comedy"
-            ]
+            ],
+            "youtube_trailer_id": "wxN1T1uxQ2g"
         }
     ]
 }

@@ -4,13 +4,22 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 const MovieDetailView = () => {
     const navigate = useNavigate();
     const [showTrailer, setShowTrailer] = useState(false);
-    const [selectedDate, setSelectedDate] = useState('Mon, May 20');
     const [selectedTime, setSelectedTime] = useState(null);
+    const [selectedDate, setSelectedDate] = useState(null);
     const [isloading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [movie, setMovie] = useState(null);
+    const [screenings, setScreenings] = useState([]);
     const [searchParams] = useSearchParams();
     const movieId = searchParams.get('movieId');
+
+    const formatTime = (time) => {
+        const [hours, minutes] = time.split(':');
+        const hour = parseInt(hours);
+        const ampm = hour >= 12 ? "PM" : "AM";
+        const formattedHour = hour % 12 || 12; // Convert to 12-hour format
+        return `${formattedHour}:${minutes} ${ampm}`;
+    }
 
     useEffect(() => {
         const fetchMovieData = async () => {
@@ -35,15 +44,47 @@ const MovieDetailView = () => {
 
         const fetchScreenings = async () => {
             try {
+                const response = await fetch('data/showtimes.json');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const data = await response.json();
+                // Get all screenings for this movie
+                const movieScreenings = data.filter((showtime) => showtime.movie_id === movieId);
 
-                
+                if (movieScreenings.length === 0) {
+                    throw new Error('Showtimes not found for this movie');
+                }
+
+                // Group screenings by sala
+                const groupedScreenings = movieScreenings.reduce((acc, screening) => {
+                    if (!acc[screening.sala]) {
+                        acc[screening.sala] = {
+                            sala: screening.sala,
+                            dates: {}
+                        };
+                    }
+                    acc[screening.sala].dates[screening.date] = screening.times;
+                    return acc;
+                }, {});
+
+                setScreenings(Object.values(groupedScreenings));
+
+                // Set initial selected date to the earliest available date
+                const availableDates = [...new Set(movieScreenings.map(s => s.date))].sort();
+                if (availableDates.length > 0) {
+                    setSelectedDate(availableDates[0]);
+                }
+
+                setIsLoading(false);
             } catch (error) {
-                setError(error);
+                console.error("Failed to load screenings:", error);
+                setScreenings([]);
                 setIsLoading(false);
             }
-        }
+        };
 
-        if(movieId) {
+        if (movieId) {
             fetchMovieData();
             fetchScreenings();
         }
@@ -51,10 +92,7 @@ const MovieDetailView = () => {
             setError('Movie ID is missing');
             setIsLoading(false);
         }
-
-
-    },[movieId]);
-
+    }, [movieId]);
 
     if (isloading) {
         return <div className="min-h-screen bg-black flex items-center justify-center">
@@ -62,39 +100,18 @@ const MovieDetailView = () => {
         </div>;
     }
 
-
-
     if (error) {
         return <div className="min-h-screen bg-black flex items-center justify-center">
             <p className="text-red-500">{error}</p>
         </div>;
     }
 
-
-    const dates = [
-        { fullDate: 'Mon, May 20', day: 'Mon', date: 20, month: 'May' },
-        { fullDate: 'Tue, May 21', day: 'Tue', date: 21, month: 'May' },
-        { fullDate: 'Wed, May 22', day: 'Wed', date: 22, month: 'May' },
-    ];
-
-    const screenings = [
-        {
-            sala: 'Sala 1',
-            timeSlotsByDay: {
-                'Mon, May 20': ['10:00 AM', '1:00 PM', '4:00 PM'],
-                'Tue, May 21': ['11:00 AM', '2:00 PM', '5:00 PM'],
-                'Wed, May 22': ['12:00 PM', '3:00 PM', '6:00 PM', '9:00 PM', '11:00 PM'],
-            },
-        },
-    ];
-
     const openTrailer = () => setShowTrailer(true);
     const closeTrailer = () => setShowTrailer(false);
     const handleTimeSelect = (day, time) => {
-        if (selectedDate === day && selectedTime === time) {
+        if (selectedTime === time) {
             setSelectedTime(null);
         } else {
-            setSelectedDate(day);
             setSelectedTime(time);
         }
     };
@@ -120,7 +137,7 @@ const MovieDetailView = () => {
                         className="w-full h-full object-cover transform transition-transform duration-700 hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t md:from-black md:via-black/30 md:to-transparent from-black/90 via-black/30 to-transparent" />
-                    
+
                     {/* Watch Trailer Button - Mobile Only */}
                     <button
                         onClick={openTrailer}
@@ -162,76 +179,88 @@ const MovieDetailView = () => {
                             </button>
                         </div>
 
-                        {/* Date Selector */}
-                        <div className="space-y-3">
-                            <h2 className="text-xl font-semibold text-white">Select Date</h2>
-                            <div className="flex space-x-3 overflow-x-auto pb-3 scrollbar-hide">
-                                {dates.map((date, index) => (
-                                    <button
-                                        key={index}
-                                        onClick={() => setSelectedDate(date.fullDate)}
-                                        className={`flex-shrink-0 px-4 py-3 rounded-xl font-medium transition duration-300 flex flex-col items-center min-w-[90px] ${selectedDate === date.fullDate
-                                            ? 'bg-white text-black'
-                                            : 'bg-white/10 text-white hover:bg-white/20'
-                                            }`}
-                                    >
-                                        <span className="text-sm opacity-80">{date.day}</span>
-                                        <span className="text-xl font-bold my-0.5">{date.date}</span>
-                                        <span className="text-sm opacity-80">{date.month}</span>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Time Slots */}
-                        <div className="space-y-4">
-                            <h2 className="text-xl font-semibold text-white">Available Times</h2>
-                            {screenings.map((screening, idx) => (
-                                <div key={idx} className="bg-zinc-900/50 backdrop-blur-xl rounded-xl p-6 mb-4">
-                                    <h3 className="text-lg font-medium text-white mb-4">{screening.sala}</h3>
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                                        {screening.timeSlotsByDay[selectedDate]?.map((time, j) => (
+                        {screenings.length > 0 ? (
+                            <>
+                                {/* Date Selector */}
+                                <div className="space-y-3">
+                                    <h2 className="text-xl font-semibold text-white">Select Date</h2>
+                                    <div className="flex space-x-3 overflow-x-auto pb-3 scrollbar-hide">
+                                        {Object.keys(screenings[0].dates).map((date, index) => (
                                             <button
-                                                key={j}
-                                                onClick={() => handleTimeSelect(selectedDate, time)}
-                                                className={`
-                                                    flex items-center justify-center gap-2 py-4 px-6 
-                                                    text-lg font-semibold rounded-xl
-                                                    transition-all duration-300 ease-out
-                                                    hover:scale-105 active:scale-95
-                                                    ${selectedTime === time 
-                                                        ? 'bg-white text-black shadow-xl ring-2 ring-white/50 ring-offset-2 ring-offset-black' 
-                                                        : 'bg-white/10 text-white hover:bg-white/20'
-                                                    }
-                                                `}
+                                                key={index}
+                                                onClick={() => setSelectedDate(date)}
+                                                className={`flex-shrink-0 px-4 py-3 rounded-xl font-medium transition duration-300 flex flex-col items-center min-w-[90px] ${selectedDate === date
+                                                    ? 'bg-white text-black'
+                                                    : 'bg-white/10 text-white hover:bg-white/20'
+                                                    }`}
                                             >
-                                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12zm1-6.41V4a1 1 0 10-2 0v6c0 .28.11.53.29.71l4 4a1 1 0 001.42-1.42L11 9.59z" />
-                                                </svg>
-                                                <span>{time}</span>
+                                                <span className="text-sm opacity-80">{new Date(date).toLocaleDateString('en-US', { weekday: 'short' })}</span>
+                                                <span className="text-xl font-bold my-0.5">{new Date(date).getDate()}</span>
+                                                <span className="text-sm opacity-80">{new Date(date).toLocaleDateString('en-US', { month: 'short' })}</span>
                                             </button>
                                         ))}
                                     </div>
                                 </div>
-                            ))}
-                        </div>
 
-                        {/* Next Button */}
-                        <div className="mt-6">
-    <button
-        onClick={() => navigate('/select-tickets', { state: { movie, selectedDate, selectedTime } })}
-        disabled={!selectedTime}
-        className={`
-            w-full px-5 py-3 text-lg font-semibold rounded-lg transition-colors duration-200
-            ${selectedTime 
-                ? 'bg-white text-black hover:bg-gray-900 hover:text-white' 
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-            }
-        `}
-    >
-        Next: Select Tickets
-    </button>
-</div>
+                                {/* Time Slots */}
+                                <div className="space-y-4">
+                                    <h2 className="text-xl font-semibold text-white">Available Times</h2>
+                                    {screenings.map((screening, idx) => (
+                                        <div key={idx} className="bg-zinc-900/50 backdrop-blur-xl rounded-xl p-6 mb-4">
+                                            <h3 className="text-lg font-medium text-white mb-4">{screening.sala}</h3>
+                                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                                                {screening.dates[selectedDate]?.map((time, j) => (
+                                                    <button
+                                                        key={j}
+                                                        onClick={() => handleTimeSelect(selectedDate, time)}
+                                                        className={`
+                                                        flex items-center justify-center gap-2 py-4 px-6 
+                                                        text-lg font-semibold rounded-xl
+                                                        transition-all duration-300 ease-out
+                                                        hover:scale-105 active:scale-95
+                                                        ${selectedTime === time
+                                                                ? 'bg-white text-black shadow-xl ring-2 ring-white/50 ring-offset-2 ring-offset-black'
+                                                                : 'bg-white/10 text-white hover:bg-white/20'
+                                                            }
+                                                    `}
+                                                    >
+                                                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12zm1-6.41V4a1 1 0 10-2 0v6c0 .28.11.53.29.71l4 4a1 1 0 001.42-1.42L11 9.59z" />
+                                                        </svg>
+                                                        <span>{formatTime(time)}</span>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Next Button */}
+                                <div className="mt-6">
+                                    <button
+                                        onClick={() => navigate('/select-tickets', { state: { movie, selectedTime, selectedDate } })}
+                                        disabled={!selectedTime}
+                                        className={`
+                                            w-full px-5 py-3 text-lg font-semibold rounded-lg transition-colors duration-200
+                                            ${selectedTime
+                                                ? 'bg-white text-black hover:bg-gray-900 hover:text-white'
+                                                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                            }
+                                        `}
+                                    >
+                                        Next: Select Tickets
+                                    </button>
+                                </div>
+                            </>
+                        ) : (
+                            <div className="flex flex-col items-center justify-center py-12 px-4 bg-zinc-900/50 backdrop-blur-xl rounded-xl text-center">
+                                <svg className="w-16 h-16 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <h3 className="text-xl font-semibold text-white mb-2">No Showtimes Available</h3>
+                                <p className="text-gray-400">There are currently no scheduled showtimes for this movie. Please check back later.</p>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -245,7 +274,7 @@ const MovieDetailView = () => {
                         </button>
                         <iframe
                             className="w-full h-full"
-                            src={`https://www.youtube.com/embed/${movie.trailer_youtube_id}`}
+                            src={`https://www.youtube.com/embed/${movie.youtube_trailer_id}`}
                             title={movie.title}
                             frameBorder="0"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
