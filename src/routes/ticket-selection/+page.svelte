@@ -21,7 +21,7 @@
 
     let movie: Movie | undefined;
     let isImageLoading = true;
-    let time = $page.url.searchParams.get('time') || "7:30 PM";
+    let time = $page.url.searchParams.get('time') ;
     let date = $page.url.searchParams.get('date') || "";
     let month = $page.url.searchParams.get('month') || "";
     let screen = $page.url.searchParams.get('screen') || "";

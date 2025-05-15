@@ -116,10 +116,13 @@
                 const el = document.getElementById("now-showing");
                 if (el) el.scrollIntoView({ behavior: "smooth" });
             }}
-            class="px-8 py-4 bg-white text-black rounded-lg text-lg font-semibold shadow-lg hover:bg-gray-200 transition"
+            class="px-8 py-4 bg-white text-black rounded-lg text-lg font-semibold shadow-lg hover:bg-gray-200 transition mb-8"
         >
             Showtimes
         </button>
+        <div class="animate-bounce">
+            <i class="fas fa-chevron-down text-white text-3xl opacity-70" />
+        </div>
     </div>
 </section>
 
@@ -131,10 +134,7 @@
             class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"
         >
             {#each movies as movie}
-                <div
-                    on:click={() => goto(`/movie-details?movieId=${movie.id}`)}
-                    class="bg-black rounded-lg overflow-hidden group cursor-pointer border border-white/10 hover:border-white transition"
-                >
+                <div on:click={() => goto(`/movie-details?movieId=${movie.id}`)} class="bg-black rounded-lg overflow-hidden group cursor-pointer border border-white/10 hover:border-white transition">
                     <div class="relative aspect-[2/3]">
                         <img
                             src={movie.posterUrl}
