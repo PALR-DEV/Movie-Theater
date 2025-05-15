@@ -7,6 +7,9 @@
  */
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import formatTime from '../../Utils/FormatTime';
+import isTimeTooSoon from '../../Utils/isTimeTooSoon';
+import formatDate from '../../Utils/FormatDate';
 
 const MovieDetailView = () => {
     const navigate = useNavigate();
@@ -20,14 +23,7 @@ const MovieDetailView = () => {
     const [searchParams] = useSearchParams();
     const movieId = searchParams.get('movieId');
 
-    // Helper function to format time from "HH:MM" to "h:MM AM/PM"
-    const formatTime = (time) => {
-        const [hours, minutes] = time.split(':');
-        const hour = parseInt(hours);
-        const ampm = hour >= 12 ? "PM" : "AM";
-        const formattedHour = hour % 12 || 12; // Convert to 12-hour format
-        return `${formattedHour}:${minutes} ${ampm}`;
-    }
+
 
     /**
      * useEffect: Fetch movie details and screening showtimes when the movieId changes.
@@ -80,7 +76,7 @@ const MovieDetailView = () => {
                 };
 
                 setScreenings([formattedScreenings]);
-                
+
                 // Set initial selected date to the earliest available date
                 const availableDates = [...new Set(movieScreenings.map(s => s.date))].sort();
                 if (availableDates.length > 0) {
@@ -198,20 +194,19 @@ const MovieDetailView = () => {
                                 <div className="space-y-3">
                                     <h2 className="text-xl font-semibold text-white">Select Date</h2>
                                     <div className="flex space-x-3 overflow-x-auto pb-3 scrollbar-hide">
-                                        {Object.keys(screenings[0].dates).map((date, index) => (
-                                            <button
+                                        {Object.keys(screenings[0].dates).map((date, index) => {
+                                            const formattedDate = formatDate(date);
+                                            return (
+                                                <button
                                                 key={index}
                                                 onClick={() => setSelectedDate(date)}
-                                                className={`flex-shrink-0 px-4 py-3 rounded-xl font-medium transition duration-300 flex flex-col items-center min-w-[90px] ${selectedDate === date
-                                                    ? 'bg-white text-black'
-                                                    : 'bg-white/10 text-white hover:bg-white/20'
-                                                    }`}
-                                            >
-                                                <span className="text-sm opacity-80">{new Date(date).toLocaleDateString('en-US', { weekday: 'short' })}</span>
-                                                <span className="text-xl font-bold my-0.5">{new Date(date).getDate()}</span>
-                                                <span className="text-sm opacity-80">{new Date(date).toLocaleDateString('en-US', { month: 'short' })}</span>
+                                                className={`flex-shrink-0 px-4 py-3 rounded-xl font-medium transition duration-300 flex flex-col items-center min-w-[90px] ${selectedDate === date ? 'bg-white text-black' : 'bg-white/10 text-white hover:bg-white/20' }`} >
+                                                <span className="text-sm opacity-80">{formattedDate.weekday}</span>
+                                                <span className="text-xl font-bold my-0.5">{formattedDate.day}</span>
+                                                <span className="text-sm opacity-80">{formattedDate.month}</span>
                                             </button>
-                                        ))}
+                                            )
+                                        })}
                                     </div>
                                 </div>
 
@@ -221,27 +216,29 @@ const MovieDetailView = () => {
                                     <div className="bg-zinc-900/50 backdrop-blur-xl rounded-xl p-6">
                                         <h3 className="text-lg font-medium text-white mb-4">{screenings[0].sala}</h3>
                                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                                            {screenings[0].dates[selectedDate]?.map((time, j) => (
-                                                <button
-                                                    key={j}
-                                                    onClick={() => handleTimeSelect(selectedDate, time)}
-                                                    className={`
-                                                    flex items-center justify-center gap-2 py-4 px-6 
-                                                    text-lg font-semibold rounded-xl
-                                                    transition-all duration-300 ease-out
-                                                    hover:scale-105 active:scale-95
-                                                    ${selectedTime === time
-                                                            ? 'bg-white text-black shadow-xl ring-2 ring-white/50 ring-offset-2 ring-offset-black'
-                                                            : 'bg-white/10 text-white hover:bg-white/20'
-                                                        }
-                                                `}
-                                                >
-                                                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12zm1-6.41V4a1 1 0 10-2 0v6c0 .28.11.53.29.71l4 4a1 1 0 001.42-1.42L11 9.59z" />
-                                                    </svg>
-                                                    <span>{formatTime(time)}</span>
-                                                </button>
-                                            ))}
+                                            {screenings[0]?.dates?.[selectedDate]?.map((time, index) => {
+                                                return (
+                                                    <button
+                                                        key={index}
+                                                        onClick={() => handleTimeSelect(selectedDate, time)}
+                                                        className={`
+                                                            flex items-center justify-center gap-2 py-4 px-6 
+                                                            text-lg font-semibold rounded-xl
+                                                            transition-all duration-300 ease-out
+                                                            hover:scale-105 active:scale-95
+                                                            ${selectedTime === time
+                                                                ? 'bg-white text-black shadow-xl ring-2 ring-white/50 ring-offset-2 ring-offset-black'
+                                                                : 'bg-white/10 text-white hover:bg-white/20'
+                                                            }
+                                                        `}
+                                                    >
+                                                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12zm1-6.41V4a1 1 0 10-2 0v6c0 .28.11.53.29.71l4 4a1 1 0 001.42-1.42L11 9.59z" />
+                                                        </svg>
+                                                        <span>{formatTime(time)}</span>
+                                                    </button>
+                                                );
+                                            })}
                                         </div>
                                     </div>
                                 </div>
