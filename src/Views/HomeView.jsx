@@ -204,7 +204,7 @@ const HomeView = () => {
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2 sm:gap-4">
 
                         {movies.map((movie, index) => (
-                            <div key={index} onClick={() => navigate(`/movie/${movie.id}`)} className="bg-zinc-900 rounded-lg overflow-hidden group active:scale-95 transition-all duration-300 touch-manipulation hover:ring-2 hover:ring-white cursor-pointer">
+                            <div key={index} onClick={() => navigate(`/movie?movieId=${movie.id}`)} className="bg-zinc-900 rounded-lg overflow-hidden group active:scale-95 transition-all duration-300 touch-manipulation hover:ring-2 hover:ring-white cursor-pointer">
                                 <div className="relative aspect-[2/3]">
                                     <img
                                         src={movie.poster_url}

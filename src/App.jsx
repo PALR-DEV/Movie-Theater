@@ -11,9 +11,9 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<MovieDetailView />} />
+        <Route path="/" element={<HomeView />} />
         {/* Add more routes as needed */}
-        <Route path="/detail" element={<MovieDetailView />} />
+        <Route path="/movie" element={<MovieDetailView />} />
       </Routes>
     </Router>
   )

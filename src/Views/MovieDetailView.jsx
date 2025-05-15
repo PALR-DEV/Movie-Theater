@@ -1,19 +1,75 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const MovieDetailView = () => {
     const navigate = useNavigate();
     const [showTrailer, setShowTrailer] = useState(false);
     const [selectedDate, setSelectedDate] = useState('Mon, May 20');
     const [selectedTime, setSelectedTime] = useState(null);
+    const [isloading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [movie, setMovie] = useState(null);
+    const [searchParams] = useSearchParams();
+    const movieId = searchParams.get('movieId');
 
-    const movie = {
-        title: 'Dune: Part Two',
-        poster_url: 'https://image.tmdb.org/t/p/w500/8b8R8l88Qje9dn9OE8PY05Nxl1X.jpg',
-        duration: '2h 46m',
-        categories: ['Adventure', 'Sci-Fi', 'Drama'],
-        trailer_youtube_id: 'XXXXXXXXXXX',
-    };
+    useEffect(() => {
+        const fetchMovieData = async () => {
+            try {
+                const response = await fetch(`data/movies.json`);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const data = await response.json();
+                const movie = data.movies.find((movie) => movie.id === movieId)
+                if (!movie) {
+                    throw new Error('Movie not found');
+                }
+                setMovie(movie);
+                setIsLoading(false);
+            }
+            catch (error) {
+                setError(error);
+                setIsLoading(false);
+            }
+        };
+
+        const fetchScreenings = async () => {
+            try {
+                
+                
+            } catch (error) {
+                setError(error);
+                setIsLoading(false);
+            }
+        }
+
+        if(movieId) {
+            fetchMovieData();
+            fetchScreenings();
+        }
+        else {
+            setError('Movie ID is missing');
+            setIsLoading(false);
+        }
+
+
+    },[movieId]);
+
+
+    if (isloading) {
+        return <div className="min-h-screen bg-black flex items-center justify-center">
+            <p className="text-white">Loading...</p>
+        </div>;
+    }
+
+
+
+    if (error) {
+        return <div className="min-h-screen bg-black flex items-center justify-center">
+            <p className="text-red-500">{error}</p>
+        </div>;
+    }
+
 
     const dates = [
         { fullDate: 'Mon, May 20', day: 'Mon', date: 20, month: 'May' },
@@ -57,56 +113,55 @@ const MovieDetailView = () => {
 
             <div className="md:flex md:min-h-screen">
                 {/* Poster */}
-                <div className="relative w-full md:w-1/2 h-[80vh] md:h-screen overflow-hidden">
+                <div className="relative w-full md:w-2/5 h-[50vh] md:h-screen overflow-hidden">
                     <img
                         src={movie.poster_url}
                         alt={movie.title}
                         className="w-full h-full object-cover transform transition-transform duration-700 hover:scale-105"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t md:from-black md:via-black/30 md:to-transparent from-black/90 via-black/30 to-transparent" />
                 </div>
 
                 {/* Info */}
-                <div className="relative md:w-1/2 flex items-center">
-                    <div className="px-6 py-10 w-full max-w-3xl mx-auto space-y-8">
-                        <h1 className="text-5xl sm:text-6xl font-bold text-white">{movie.title}</h1>
-                        <button
-                            onClick={openTrailer}
-                            className="inline-flex items-center px-6 py-3 bg-white/10 backdrop-blur-xl text-white font-semibold rounded-full border border-white/20 hover:bg-white/20 transition-all duration-300"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            Watch Trailer
-                        </button>
-
-                        <div className="flex flex-wrap items-center gap-4">
-                            <span className="px-5 py-2 bg-white/10 backdrop-blur-xl text-white text-sm font-medium rounded-full">
+                <div className="relative md:w-3/5 flex items-start">
+                    <div className="px-6 py-6 w-full max-w-3xl mx-auto space-y-6">
+                        <h1 className="text-4xl sm:text-5xl font-bold text-white">{movie.title}</h1>
+                        <div className="flex flex-wrap items-center gap-3">
+                            <button
+                                onClick={openTrailer}
+                                className="inline-flex items-center px-4 py-2 bg-white/10 backdrop-blur-xl text-white font-semibold rounded-full border border-white/20 hover:bg-white/20 transition-all duration-300"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Watch Trailer
+                            </button>
+                            <span className="px-4 py-1.5 bg-white/10 backdrop-blur-xl text-white text-sm font-medium rounded-full">
                                 {movie.duration}
                             </span>
                             {movie.categories.map((category, index) => (
-                                <span key={index} className="px-5 py-2 bg-white/10 backdrop-blur-xl text-white text-sm font-medium rounded-full">
+                                <span key={index} className="px-4 py-1.5 bg-white/10 backdrop-blur-xl text-white text-sm font-medium rounded-full">
                                     {category}
                                 </span>
                             ))}
                         </div>
 
                         {/* Date Selector */}
-                        <div className="space-y-4">
-                            <h2 className="text-2xl font-semibold text-white">Select Date</h2>
-                            <div className="flex space-x-4 overflow-x-auto pb-4 scrollbar-hide">
+                        <div className="space-y-3">
+                            <h2 className="text-xl font-semibold text-white">Select Date</h2>
+                            <div className="flex space-x-3 overflow-x-auto pb-3 scrollbar-hide">
                                 {dates.map((date, index) => (
                                     <button
                                         key={index}
                                         onClick={() => setSelectedDate(date.fullDate)}
-                                        className={`flex-shrink-0 px-6 py-4 rounded-2xl font-medium transition duration-300 flex flex-col items-center min-w-[100px] ${selectedDate === date.fullDate
+                                        className={`flex-shrink-0 px-4 py-3 rounded-xl font-medium transition duration-300 flex flex-col items-center min-w-[90px] ${selectedDate === date.fullDate
                                             ? 'bg-white text-black'
                                             : 'bg-white/10 text-white hover:bg-white/20'
                                             }`}
                                     >
                                         <span className="text-sm opacity-80">{date.day}</span>
-                                        <span className="text-2xl font-bold my-1">{date.date}</span>
+                                        <span className="text-xl font-bold my-0.5">{date.date}</span>
                                         <span className="text-sm opacity-80">{date.month}</span>
                                     </button>
                                 ))}
@@ -114,22 +169,21 @@ const MovieDetailView = () => {
                         </div>
 
                         {/* Time Slots */}
-                        <div className="space-y-6">
-                            <h2 className="text-2xl font-semibold text-white">Available Times</h2>
+                        <div className="space-y-4">
+                            <h2 className="text-xl font-semibold text-white">Available Times</h2>
                             {screenings.map((screening, idx) => (
-                                <div key={idx} className="bg-zinc-900/50 backdrop-blur-xl rounded-2xl p-6 mb-6">
-                                    <h3 className="text-lg font-medium text-white">{screening.sala}</h3>
-                                    <div className="grid grid-cols-2 gap-4 mt-4">
+                                <div key={idx} className="bg-zinc-900/50 backdrop-blur-xl rounded-xl p-4 mb-4">
+                                    <h3 className="text-base font-medium text-white">{screening.sala}</h3>
+                                    <div className="grid grid-cols-3 gap-3 mt-3">
                                         {screening.timeSlotsByDay[selectedDate]?.map((time, j) => (
                                             <button
                                                 key={j}
                                                 onClick={() => handleTimeSelect(selectedDate, time)}
                                                 className={`
-                                                    flex items-center justify-center gap-2 py-3 px-5 text-lg font-semibold rounded-lg transition-transform duration-200
-                                                    ${selectedTime === time ? 'bg-white text-black scale-110 shadow-xl' : 'bg-white/10 text-white hover:bg-white/20 hover:scale-105'}
+                                                    flex items-center justify-center gap-2 py-2 px-3 text-base font-semibold rounded-lg transition-transform duration-200
+                                                    ${selectedTime === time ? 'bg-white text-black scale-105 shadow-xl' : 'bg-white/10 text-white hover:bg-white/20 hover:scale-102'}
                                                 `}
                                             >
-                                                <i className="fas fa-clock text-xs opacity-80"></i>
                                                 <span>{time}</span>
                                             </button>
                                         ))}
@@ -137,21 +191,17 @@ const MovieDetailView = () => {
                                 </div>
                             ))}
                         </div>
+
                         {/* Next Button */}
-                        {/* <div className="mt-8 text-center">
+                        <div className="mt-6">
                             <button
                                 onClick={() => navigate('/select-tickets', { state: { movie, selectedDate, selectedTime } })}
                                 disabled={!selectedTime}
-                                className={`
-                                    px-6 py-3 text-lg font-semibold rounded-full transition-colors duration-200
-                                    ${selectedTime
-                                        ? 'bg-indigo-500 text-white hover:bg-indigo-600'
-                                        : 'bg-gray-600 text-gray-400 cursor-not-allowed'}
-                                `}
+                                className={`w-full px-5 py-3 text-lg font-semibold rounded-lg transition-colors duration-200 ${selectedTime ? 'bg-white text-black hover:bg-gray-400 hover:text-white' : 'bg-gray-600 text-gray-400 cursor-not-allowed' }`}
                             >
                                 Next: Select Tickets
                             </button>
-                        </div> */}
+                        </div>
                     </div>
                 </div>
             </div>
