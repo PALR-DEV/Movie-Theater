@@ -120,31 +120,46 @@ const MovieDetailView = () => {
                         className="w-full h-full object-cover transform transition-transform duration-700 hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t md:from-black md:via-black/30 md:to-transparent from-black/90 via-black/30 to-transparent" />
+                    
+                    {/* Watch Trailer Button - Mobile Only */}
+                    <button
+                        onClick={openTrailer}
+                        className="md:hidden absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 px-6 py-3 bg-white text-black font-semibold rounded-full hover:bg-opacity-90 transition-all duration-300 shadow-lg"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Watch Trailer
+                    </button>
                 </div>
 
                 {/* Info */}
                 <div className="relative md:w-3/5 flex items-start">
                     <div className="px-6 py-6 w-full max-w-3xl mx-auto space-y-6">
                         <h1 className="text-4xl sm:text-5xl font-bold text-white">{movie.title}</h1>
-                        <div className="flex flex-wrap items-center gap-3">
+                        <div className="flex flex-col gap-4">
+                            <div className="flex flex-wrap items-center gap-3">
+                                <span className="px-4 py-1.5 bg-white/10 backdrop-blur-xl text-white text-sm font-medium rounded-full">
+                                    {movie.duration}
+                                </span>
+                                {movie.categories.map((category, index) => (
+                                    <span key={index} className="px-4 py-1.5 bg-white/10 backdrop-blur-xl text-white text-sm font-medium rounded-full">
+                                        {category}
+                                    </span>
+                                ))}
+                            </div>
+                            {/* Watch Trailer Button - Desktop Only */}
                             <button
                                 onClick={openTrailer}
-                                className="inline-flex items-center px-4 py-2 bg-white/10 backdrop-blur-xl text-white font-semibold rounded-full border border-white/20 hover:bg-white/20 transition-all duration-300"
+                                className="hidden md:inline-flex items-center gap-2 px-6 py-3 bg-white text-black font-semibold rounded-full hover:bg-opacity-90 transition-all duration-300 shadow-lg w-fit"
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                                 Watch Trailer
                             </button>
-                            <span className="px-4 py-1.5 bg-white/10 backdrop-blur-xl text-white text-sm font-medium rounded-full">
-                                {movie.duration}
-                            </span>
-                            {movie.categories.map((category, index) => (
-                                <span key={index} className="px-4 py-1.5 bg-white/10 backdrop-blur-xl text-white text-sm font-medium rounded-full">
-                                    {category}
-                                </span>
-                            ))}
                         </div>
 
                         {/* Date Selector */}
