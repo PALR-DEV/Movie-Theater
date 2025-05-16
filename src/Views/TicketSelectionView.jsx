@@ -6,11 +6,42 @@ import formatDate from '../../Utils/FormatDate';
 const TicketSelectionView = () => {
     const [imageLoaded, setImageLoaded] = useState(false);
     const [movieData, setMovieData] = useState({});
-    const [ticketTime, setTime] = useState(null); 
-    const [TicketDate, setDate] = useState(null); 
+    const [ticketTime, setTime] = useState(null);
+    const [TicketDate, setDate] = useState(null);
+    const [ticketCounts, setTicketCounts] = useState({ Adult: 0, Senior: 0, Kid: 0 });
+    const [ticketPrices] = useState({ Adult: 12.99, Senior: 10.99, Kid: 8.99 });
     const [sala, setSala] = useState(null);
     const location = useLocation();
     const navigate = useNavigate();
+
+    //helper function to get the total number of tickets
+    const getTotalTickets = (counts) => {
+        return Object.values(counts).reduce((sum, count) => sum + count, 0);
+    };
+
+    //helper function to calculate the total price
+    const calculateTotalPrice = () => {
+        return Object.entries(ticketCounts).reduce((total, [type, count]) => {
+            return total + ticketPrices[type] * count;
+        }, 0).toFixed(2);
+    }
+
+
+
+
+    const handleIncrement = (type) => {
+        setTicketCounts((prev) => ({
+            ...prev,
+            [type]: prev[type] + 1
+        }));
+    };
+
+    const handleDecrement = (type) => {
+        setTicketCounts((prev) => ({
+            ...prev,
+            [type]: Math.max(0, prev[type] - 1)
+        }));
+    };
 
 
     useEffect(() => {
@@ -23,17 +54,17 @@ const TicketSelectionView = () => {
 
         if (movie && selectedTime && selectedDate && sala) {
             setMovieData(movie);
-            setTime(selectedTime);
+            setTime(formatTime(selectedTime));
             // Format the date using our utility function
             const formattedDate = formatDate(selectedDate);
             const fullWeekday = formattedDate.weekday
-            .replace('Mon', 'Monday')
-            .replace('Tue', 'Tuesday')
-            .replace('Wed', 'Wednesday')
-            .replace('Thu', 'Thursday')
-            .replace('Fri', 'Friday')
-            .replace('Sat', 'Saturday')
-            .replace('Sun', 'Sunday');
+                .replace('Mon', 'Monday')
+                .replace('Tue', 'Tuesday')
+                .replace('Wed', 'Wednesday')
+                .replace('Thu', 'Thursday')
+                .replace('Fri', 'Friday')
+                .replace('Sat', 'Saturday')
+                .replace('Sun', 'Sunday');
 
             setDate(`${fullWeekday}, ${formattedDate.month} ${formattedDate.day}`);
             setSala(sala);
@@ -72,25 +103,25 @@ const TicketSelectionView = () => {
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent" />
                             <div className="absolute bottom-0 left-0 right-0 p-6">
-                                <h1 className="text-3xl md:text-4xl font-bold mb-2">{movieData.title}</h1>
-                                <div className="flex items-center gap-4 text-zinc-300">
+                                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2">{movieData.title}</h1>
+                                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 text-zinc-300">
                                     <div className="flex items-center gap-2">
-                                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20">
                                             <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12zm1-6.41V4a1 1 0 10-2 0v6c0 .28.11.53.29.71l4 4a1 1 0 001.42-1.42L11 9.59z" />
                                         </svg>
-                                        <span>{ticketTime}</span>
+                                        <span className="text-xs sm:text-sm md:text-base">{ticketTime}</span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20">
                                             <path d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" />
                                         </svg>
-                                        <span>{TicketDate}</span>
+                                        <span className="text-xs sm:text-sm md:text-base whitespace-nowrap">{TicketDate}</span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20">
                                             <path d="M7 3a1 1 0 012 0v1h2V3a1 1 0 112 0v1h2a2 2 0 012 2v2H3V6a2 2 0 012-2h2V3zM3 9h18v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                                         </svg>
-                                        <span>Room {sala}</span>
+                                        <span className="text-xs sm:text-sm md:text-base">Room {sala}</span>
                                     </div>
                                 </div>
                             </div>
@@ -124,14 +155,14 @@ const TicketSelectionView = () => {
                                         <h3 className="text-lg font-semibold capitalize group-hover:text-white transition-colors duration-300">
                                             {type}
                                         </h3>
-                                        <p className="text-zinc-400 text-sm">$12.99</p>
+                                        <p className="text-zinc-400 text-sm">{ticketPrices[type]}</p>
                                     </div>
                                     <div className="flex items-center gap-3 bg-black/20 rounded-xl p-1">
-                                        <button className="w-8 h-8 rounded-lg border border-white/10 flex items-center justify-center hover:bg-white hover:text-black transition-all duration-300">
+                                        <button className="w-8 h-8 rounded-lg border border-white/10 flex items-center justify-center hover:bg-white hover:text-black transition-all duration-300" onClick={() => handleDecrement(type)}>
                                             <span className="text-xl font-light">-</span>
                                         </button>
-                                        <span className="w-8 text-center text-lg font-medium">0</span>
-                                        <button className="w-8 h-8 rounded-lg border border-white/10 flex items-center justify-center hover:bg-white hover:text-black transition-all duration-300">
+                                        <span className="w-8 text-center text-lg font-medium">{ticketCounts[type]}</span>
+                                        <button className="w-8 h-8 rounded-lg border border-white/10 flex items-center justify-center hover:bg-white hover:text-black transition-all duration-300" onClick={() => handleIncrement(type)}>
                                             <span className="text-xl font-light">+</span>
                                         </button>
                                     </div>
@@ -143,9 +174,9 @@ const TicketSelectionView = () => {
                                 <div className="flex justify-between items-baseline">
                                     <div className="flex flex-col">
                                         <p className="text-zinc-400 text-sm">Total Amount</p>
-                                        <p className="text-3xl font-bold">$0.00</p>
+                                        <p className="text-3xl font-bold">${calculateTotalPrice()}</p>
                                     </div>
-                                    <div className="text-sm text-zinc-400">0 tickets</div>
+                                    <div className="text-sm text-zinc-400">{getTotalTickets(ticketCounts)} tickets</div>
                                 </div>
                                 <button className="w-full py-4 rounded-xl font-semibold text-lg transition-all duration-500 transform hover:translate-y-[-2px] bg-white/5 text-zinc-500 cursor-not-allowed">
                                     Select Tickets
