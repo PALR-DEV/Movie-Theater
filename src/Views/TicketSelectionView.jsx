@@ -24,7 +24,18 @@ const TicketSelectionView = () => {
         if (movie && selectedTime && selectedDate && sala) {
             setMovieData(movie);
             setTime(selectedTime);
-            setDate(selectedDate);
+            // Format the date using our utility function
+            const formattedDate = formatDate(selectedDate);
+            const fullWeekday = formattedDate.weekday
+            .replace('Mon', 'Monday')
+            .replace('Tue', 'Tuesday')
+            .replace('Wed', 'Wednesday')
+            .replace('Thu', 'Thursday')
+            .replace('Fri', 'Friday')
+            .replace('Sat', 'Saturday')
+            .replace('Sun', 'Sunday');
+
+            setDate(`${fullWeekday}, ${formattedDate.month} ${formattedDate.day}`);
             setSala(sala);
         }
 
@@ -79,7 +90,7 @@ const TicketSelectionView = () => {
                                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                             <path d="M7 3a1 1 0 012 0v1h2V3a1 1 0 112 0v1h2a2 2 0 012 2v2H3V6a2 2 0 012-2h2V3zM3 9h18v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                                         </svg>
-                                        <span>sala</span>
+                                        <span>Room {sala}</span>
                                     </div>
                                 </div>
                             </div>
@@ -93,7 +104,7 @@ const TicketSelectionView = () => {
                                             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                                 <path d="M2 6a2 2 0 012-2h12a2 2 0 012 2v2a2 2 0 100 4v2a2 2 0 01-2 2H4a2 2 0 01-2-2v-2a2 2 0 100-4V6z" />
                                             </svg>
-                                            <span className="font-medium">Room A</span>
+                                            <span className="font-medium">Room {sala}</span>
                                         </div>
                                         <div className="text-xs px-3 py-1 bg-white/10 rounded-full text-zinc-300">
                                             Premium Seating
