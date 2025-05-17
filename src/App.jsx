@@ -10,7 +10,7 @@ import TicketSelectionView from './Views/TicketSelectionView'
 function App() {
 
   return (
-    <Router>
+    <Router basename='/Movie-Theater'>  
       <Routes>
         <Route path="/" element={<HomeView />} />
         {/* Add more routes as needed */}
