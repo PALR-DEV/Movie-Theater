@@ -158,12 +158,12 @@ const TicketSelectionView = () => {
                                         <p className="text-zinc-400 text-sm">{ticketPrices[type]}</p>
                                     </div>
                                     <div className="flex items-center gap-3 bg-black/20 rounded-xl p-1">
-                                        <button className="w-8 h-8 rounded-lg border border-white/10 flex items-center justify-center hover:bg-white hover:text-black transition-all duration-300" onClick={() => handleDecrement(type)}>
-                                            <span className="text-xl font-light">-</span>
+                                        <button className="w-12 h-12 sm:w-10 sm:h-10 rounded-lg border border-white/10 flex items-center justify-center hover:bg-white hover:text-black transition-all duration-300" onClick={() => handleDecrement(type)}>
+                                            <span className="text-2xl sm:text-xl font-light">-</span>
                                         </button>
-                                        <span className="w-8 text-center text-lg font-medium">{ticketCounts[type]}</span>
-                                        <button className="w-8 h-8 rounded-lg border border-white/10 flex items-center justify-center hover:bg-white hover:text-black transition-all duration-300" onClick={() => handleIncrement(type)}>
-                                            <span className="text-xl font-light">+</span>
+                                        <span className="w-10 text-center text-xl font-medium">{ticketCounts[type]}</span>
+                                        <button className="w-12 h-12 sm:w-10 sm:h-10 rounded-lg border border-white/10 flex items-center justify-center hover:bg-white hover:text-black transition-all duration-300" onClick={() => handleIncrement(type)}>
+                                            <span className="text-2xl sm:text-xl font-light">+</span>
                                         </button>
                                     </div>
                                 </div>
@@ -178,8 +178,17 @@ const TicketSelectionView = () => {
                                     </div>
                                     <div className="text-sm text-zinc-400">{getTotalTickets(ticketCounts)} tickets</div>
                                 </div>
-                                <button className="w-full py-4 rounded-xl font-semibold text-lg transition-all duration-500 transform hover:translate-y-[-2px] bg-white/5 text-zinc-500 cursor-not-allowed">
-                                    Select Tickets
+                                
+                                <button
+                                    className={`w-full py-4 rounded-xl font-semibold text-lg transition-all duration-500 transform  ${getTotalTickets(ticketCounts) > 0 ? 'bg-white text-black hover:bg-gray-950 hover:text-white hover:translate-y-[-2px]' : 'bg-white/5 text-zinc-500 cursor-not-allowed'}`}
+                                    disabled={getTotalTickets(ticketCounts) === 0}
+                                    onClick={() => {
+                                        // Add your checkout logic here
+                                        console.log('Proceeding to checkout...');
+
+                                    }}
+                                >
+                                    Checkout
                                 </button>
                             </div>
                         </div>
