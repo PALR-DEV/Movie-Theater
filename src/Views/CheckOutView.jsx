@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import formatDate from "../../Utils/FormatDate";
 
 export default function CheckOutView() {
     const navigate = useNavigate();
@@ -8,6 +9,8 @@ export default function CheckOutView() {
     const [cvv, setCvv] = useState('');
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
+    const [serviceFee] = useState(1.50);
+    const [ivuRate] = useState(0.115); // 11.5%
     const location = useLocation();
     const { state } = location;
 
@@ -111,39 +114,55 @@ export default function CheckOutView() {
                                 </div>
                             </div>
 
-                            <div className="bg-white/5 rounded-xl p-4">
-                                <div className="flex justify-between items-center mb-3">
-                                    <h3 className="text-lg font-semibold">Tickets</h3>
-                                    <span className="text-sm text-zinc-400">
-                                        {Object.values(location.state.ticketCounts).reduce((a, b) => a + b, 0)} total tickets
-                                    </span>
+                            <div className="bg-gradient-to-br from-white/5 to-white/[0.02] rounded-xl p-6 border border-white/10">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h3 className="text-lg font-semibold">Your Tickets</h3>
+                                    <div className="px-3 py-1 bg-white/10 rounded-full">
+                                        <span className="text-sm text-zinc-300">
+                                            {Object.values(location.state.ticketCounts).reduce((a, b) => a + b, 0)} tickets
+                                        </span>
+                                    </div>
                                 </div>
-                                <div className="space-y-2">
+                                <div className="space-y-3">
                                     {Object.entries(location.state.ticketCounts).map(([type, count]) => count > 0 && (
-                                        <div key={type} className="flex justify-between items-center">
-                                            <div className="flex items-center gap-2">
-                                                <span className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-sm">
+                                        <div key={type} className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
+                                            <div className="flex items-center gap-3">
+                                                <span className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-sm font-medium">
                                                     {count}
                                                 </span>
-                                                <span className="text-zinc-300">{type}</span>
+                                                <span className="text-base text-zinc-200">{type}</span>
                                             </div>
-                                            {/* <span className="text-sm">${type === 'Adult' ? '12.99' : type === 'Senior' ? '10.99' : '8.99'} x {count}</span> */}
-                                            <span className="font-medium">${(count * (type === 'Adult' ? 12.99 : type === 'Senior' ? 10.99 : 8.99)).toFixed(2)}</span>
-                                            {/* <span className="font-medium">x{count}</span> */}
+                                            <span className="font-semibold">${(count * (type === 'Adult' ? 12.99 : type === 'Senior' ? 10.99 : 8.99)).toFixed(2)}</span>
                                         </div>
                                     ))}
                                 </div>
                             </div>
-                            <div className="bg-white/5 rounded-xl p-4">
-                                <div className="flex justify-between items-center">
-                                    <div>
-                                        <span className="text-sm text-zinc-400">Total Amount</span>
-                                        <div className="text-3xl font-bold mt-1">${Number(location.state.totalPrice)}</div>
+
+                            <div className="bg-gradient-to-br from-white/5 to-white/[0.02] rounded-xl p-6 border border-white/10">
+                                <div className="flex flex-col gap-4">
+                                    <div className="flex items-center justify-between py-2">
+                                        <span className="text-zinc-400">Subtotal</span>
+                                        <span className="font-medium">${Number(location.state.totalPrice)}</span>
                                     </div>
-                                    <div className="h-12 w-12 rounded-full bg-white/10 flex items-center justify-center">
-                                        <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
+                                    <div className="flex items-center justify-between py-2">
+                                        <span className="text-zinc-400">Service Fee</span>
+                                        <span className="font-medium">${serviceFee.toFixed(2)}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between py-2">
+                                        <span className="text-zinc-400">IVU ({(ivuRate * 100).toFixed(1)}%)</span>
+                                        <span className="font-medium">${(Number(location.state.totalPrice) * ivuRate).toFixed(2)}</span>
+                                    </div>
+                                    <div className="h-px bg-white/10"></div>
+                                    <div className="flex items-center justify-between pt-2">
+                                        <div>
+                                            <span className="text-sm text-zinc-400">Total Amount</span>
+                                            <div className="text-3xl font-bold mt-1">${(Number(location.state.totalPrice) + serviceFee + Number(location.state.totalPrice) * ivuRate).toFixed(2)}</div>
+                                        </div>
+                                        <div className="h-12 w-12 rounded-xl bg-white/10 backdrop-blur flex items-center justify-center">
+                                            <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -221,7 +240,7 @@ export default function CheckOutView() {
                                 type="submit"
                                 className="w-full py-4 bg-white text-black rounded-xl font-semibold text-lg transition-all duration-500 transform hover:bg-gray-900 hover:text-white hover:translate-y-[-2px]"
                             >
-                                Pay ${totalAmount}
+                                Pay ${(Number(location.state.totalPrice) + serviceFee + Number(location.state.totalPrice) * ivuRate).toFixed(2)}
                             </button>
                         </form>
                     </div>
