@@ -1,0 +1,64 @@
+{
+    "movies": [
+        {
+            "id": "550e8400-e29b-41d4-a716-446655440000",
+            "title": "Dune: Part Two",
+            "duration": "2h 46m",
+            "poster_url": "https://image.tmdb.org/t/p/w500/8b8R8l88Qje9dn9OE8PY05Nxl1X.jpg",
+            "categories": [
+                "Adventure",
+                "Sci-Fi",
+                "Drama"
+            ],
+            "youtube_trailer_id": "Way9Dexny3w"
+        },
+        {
+            "id": "a1b2c3d4-e5f6-47g8-h9i0-j1k2l3m4n5o6",
+            "title": "Star Wars: Episode III – Revenge of the Sith",
+            "duration": "2h 20m",
+            "poster_url": "https://images.fandango.com/ImageRenderer/0/0/redesign/static/img/default_poster.png/0/images/masterrepository/Fandango/239973/starwarsepisodeiii-rerelease-posterart.jpg",
+            "categories": [
+                "Action",
+                "Sci-Fi",
+                "Fantasy"
+            ],
+            "youtube_trailer_id": "5UnjrG_N8hU"
+        },
+        {
+            "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+            "title": "Oppenheimer",
+            "duration": "3h 0m",
+            "poster_url": "https://m.media-amazon.com/images/M/MV5BN2JkMDc5MGQtZjg3YS00NmFiLWIyZmQtZTJmNTM5MjVmYTQ4XkEyXkFqcGc@._V1_.jpg",
+            "categories": [
+                "Biography",
+                "Drama",
+                "History"
+            ],
+            "youtube_trailer_id": "uYPbbksJxIg"
+        },
+        {
+            "id": "7e1b2a4c-c56d-4b3f-a932-8dc8e7c67b3e",
+            "title": "Spider-Man: No Way Home",
+            "duration": "2h 28m",
+            "poster_url": "https://image.tmdb.org/t/p/w500/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg",
+            "categories": [
+                "Action",
+                "Adventure",
+                "Fantasy"
+            ],
+            "youtube_trailer_id": "JfVOs4VSpmA"
+        },
+        {
+            "id": "98e3fd6f-fccb-4c6b-90d7-f2c55738b6ec",
+            "title": "Everything Everywhere All At Once",
+            "duration": "2h 19m",
+            "poster_url": "https://image.tmdb.org/t/p/w500/w3LxiVYdWWRvEVdn5RYq6jIqkb1.jpg",
+            "categories": [
+                "Action",
+                "Adventure",
+                "Comedy"
+            ],
+            "youtube_trailer_id": "wxN1T1uxQ2g"
+        }
+    ]
+}
