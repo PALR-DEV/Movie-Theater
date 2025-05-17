@@ -185,6 +185,17 @@ const TicketSelectionView = () => {
                                     onClick={() => {
                                         // Add your checkout logic here
                                         console.log('Proceeding to checkout...');
+                                        navigate('/checkout', {
+                                            state: {
+                                                movieData,
+                                                ticketTime,
+                                                TicketDate: location.state.selectedDate,
+                                                sala,
+                                                ticketCounts,
+                                                totalPrice: calculateTotalPrice(),
+                                                totalTickets: getTotalTickets(ticketCounts)
+                                            }
+                                        });
 
                                     }}
                                 >

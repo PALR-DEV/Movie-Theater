@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 
 export default function CheckOutView() {
     const navigate = useNavigate();
@@ -8,6 +8,12 @@ export default function CheckOutView() {
     const [cvv, setCvv] = useState('');
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
+    const location = useLocation();
+    const { state } = location;
+
+    useEffect(() => {
+      console.log(state)
+    })
 
     // Mock data for UI demonstration
     const mockData = {
@@ -82,13 +88,13 @@ export default function CheckOutView() {
                         {/* Movie Poster Header */}
                         <div className="relative h-48 overflow-hidden">
                             <img
-                                src={movie.poster_url}
-                                alt={movie.title}
+                                src={location.state.movieData.poster_url}
+                                alt={location.state.movieData.title}
                                 className="w-full h-full object-cover"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-zinc-900/50 to-transparent" />
                             <div className="absolute bottom-0 left-0 right-0 p-6">
-                                <h2 className="text-2xl font-bold text-white">{movie.title}</h2>
+                                <h2 className="text-2xl font-bold text-white">{location.state.movieData.title}</h2>
                             </div>
                         </div>
                         
@@ -97,18 +103,23 @@ export default function CheckOutView() {
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="bg-white/5 rounded-xl p-4 flex flex-col items-center">
                                     <span className="text-sm text-zinc-400">Date</span>
-                                    <span className="text-lg font-semibold mt-1">{selectedDate}</span>
+                                    <span className="text-lg font-semibold mt-1">{location.state.TicketDate}</span>
                                 </div>
                                 <div className="bg-white/5 rounded-xl p-4 flex flex-col items-center">
                                     <span className="text-sm text-zinc-400">Time</span>
-                                    <span className="text-lg font-semibold mt-1">{selectedTime}</span>
+                                    <span className="text-lg font-semibold mt-1">{location.state.ticketTime}</span>
                                 </div>
                             </div>
 
                             <div className="bg-white/5 rounded-xl p-4">
-                                <h3 className="text-lg font-semibold mb-3">Tickets</h3>
+                                <div className="flex justify-between items-center mb-3">
+                                    <h3 className="text-lg font-semibold">Tickets</h3>
+                                    <span className="text-sm text-zinc-400">
+                                        {Object.values(location.state.ticketCounts).reduce((a, b) => a + b, 0)} total tickets
+                                    </span>
+                                </div>
                                 <div className="space-y-2">
-                                    {Object.entries(ticketCounts).map(([type, count]) => count > 0 && (
+                                    {Object.entries(location.state.ticketCounts).map(([type, count]) => count > 0 && (
                                         <div key={type} className="flex justify-between items-center">
                                             <div className="flex items-center gap-2">
                                                 <span className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-sm">
@@ -116,7 +127,9 @@ export default function CheckOutView() {
                                                 </span>
                                                 <span className="text-zinc-300">{type}</span>
                                             </div>
+                                            {/* <span className="text-sm">${type === 'Adult' ? '12.99' : type === 'Senior' ? '10.99' : '8.99'} x {count}</span> */}
                                             <span className="font-medium">${(count * (type === 'Adult' ? 12.99 : type === 'Senior' ? 10.99 : 8.99)).toFixed(2)}</span>
+                                            {/* <span className="font-medium">x{count}</span> */}
                                         </div>
                                     ))}
                                 </div>
@@ -125,7 +138,7 @@ export default function CheckOutView() {
                                 <div className="flex justify-between items-center">
                                     <div>
                                         <span className="text-sm text-zinc-400">Total Amount</span>
-                                        <div className="text-3xl font-bold mt-1">${totalAmount}</div>
+                                        <div className="text-3xl font-bold mt-1">${Number(location.state.totalPrice)}</div>
                                     </div>
                                     <div className="h-12 w-12 rounded-full bg-white/10 flex items-center justify-center">
                                         <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
