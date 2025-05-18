@@ -12,9 +12,7 @@ import {
   PaymentRequestButtonElement,
 } from '@stripe/react-stripe-js';
 
-const stripePromise = loadStripe('pk_test_51RO2teR59D7wgJK5Y75O2bBVM4AWCBaMQLt5W9YWGAc35ig5kvdecK9yRL5IT9n3J2QETcyx5vnGLjq3icuzSamk00dNqnEtsL');
-
-
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
 
 function PaymentForm() {
