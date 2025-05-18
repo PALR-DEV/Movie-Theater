@@ -11,7 +11,6 @@ import {
   CardCvcElement,
   PaymentRequestButtonElement,
 } from '@stripe/react-stripe-js';
-
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
 
@@ -243,6 +242,7 @@ export default function CheckOutView() {
   const [serviceFee] = useState(1.50);
   const [ivuRate] = useState(0.115);
   const location = useLocation();
+  const formatedDate = formatDate(location.state.TicketDate);
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -280,7 +280,7 @@ export default function CheckOutView() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-white/5 rounded-xl p-4 flex flex-col items-center">
                   <span className="text-sm text-zinc-400">Date</span>
-                  <span className="text-lg font-semibold mt-1">{location.state.TicketDate}</span>
+                  <span className="text-lg font-semibold mt-1">{formatedDate.weekday} {formatedDate.day} {formatedDate.month} </span>
                 </div>
                 <div className="bg-white/5 rounded-xl p-4 flex flex-col items-center">
                   <span className="text-sm text-zinc-400">Time</span>

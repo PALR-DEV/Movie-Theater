@@ -13,6 +13,7 @@ const TicketSelectionView = () => {
     const [sala, setSala] = useState(null);
     const location = useLocation();
     const navigate = useNavigate();
+    
 
     //helper function to get the total number of tickets
     const getTotalTickets = (counts) => {
