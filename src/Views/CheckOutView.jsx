@@ -33,6 +33,38 @@ function PaymentForm() {
   const [email, setEmail] = useState("");
   const [paymentRequest, setPaymentRequest] = useState(null);
 
+  // Apple Pay/PaymentRequest initialization decoupled from createPaymentIntent
+  useEffect(() => {
+    if (!stripe || !clientSecret) return;
+    const pr = stripe.paymentRequest({
+      country: 'US',
+      currency: 'usd',
+      total: { label: 'Movie Tickets', amount: Math.round(totalAmount * 100) },
+      requestPayerName: true,
+      requestPayerEmail: true,
+    });
+    pr.canMakePayment().then(result => {
+      if (result) setPaymentRequest(pr);
+    });
+    pr.on('paymentmethod', async e => {
+      setLoading(true);
+      const { error: confirmError } = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: {
+          card: elements.getElement(CardNumberElement),
+          billing_details: { name, email },
+        },
+      });
+      if (confirmError) {
+        setError(confirmError.message);
+        setLoading(false);
+      } else {
+        navigate('/success', { state: { paymentIntent: { id: e.paymentMethod.id } } });
+      }
+    });
+  }, [stripe, clientSecret, elements, name, email, totalAmount, navigate]);
+
+  
+
   useEffect(() => {
     const createPaymentIntent = async () => {
       try {
@@ -47,39 +79,11 @@ function PaymentForm() {
         if (!response.ok) throw new Error('Failed to create payment intent.');
         const data = await response.json();
         setClientSecret(data.clientSecret);
-        // Apple Pay/PaymentRequest initialization
-        if (stripe && data.clientSecret) {
-          const pr = stripe.paymentRequest({
-            country: 'US',
-            currency: 'usd',
-            total: { label: 'Movie Tickets', amount: Math.round(totalAmount * 100) },
-            requestPayerName: true,
-            requestPayerEmail: true,
-          });
-          pr.canMakePayment().then(result => {
-            if (result) setPaymentRequest(pr);
-          });
-          pr.on('paymentmethod', async e => {
-            setLoading(true);
-            const { error: confirmError } = await stripe.confirmCardPayment(data.clientSecret, {
-              payment_method: {
-                card: elements.getElement(CardNumberElement),
-                billing_details: { name, email },
-              },
-            });
-            if (confirmError) {
-              setError(confirmError.message);
-              setLoading(false);
-            } else {
-              navigate('/success', { state: { paymentIntent: { id: e.paymentMethod.id } } });
-            }
-          });
-        }
       } catch (err) {
         setError("Error creating payment intent.");
       }
     };
-    // createPaymentIntent();
+    createPaymentIntent();
   }, [totalAmount, stripe, elements, name, email, navigate]);
 
   const handleSubmit = async (e) => {
