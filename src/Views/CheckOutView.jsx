@@ -79,7 +79,7 @@ function PaymentForm() {
         setError("Error creating payment intent.");
       }
     };
-    createPaymentIntent();
+    // createPaymentIntent();
   }, [totalAmount, stripe, elements, name, email, navigate]);
 
   const handleSubmit = async (e) => {
